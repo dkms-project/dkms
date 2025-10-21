@@ -103,8 +103,7 @@ show_deprecation_warnings=0
 # All of the variables not related to signing we will accept from framework.conf.
 readonly dkms_framework_nonsigning_variables="source_tree dkms_tree install_tree tmp_location
    verbose symlink_modules autoinstall_all_kernels modprobe_on_install parallel_jobs
-   compress_gzip_opts compress_xz_opts compress_zstd_opts
-   post_transaction"
+   compress_gzip_opts compress_xz_opts compress_zstd_opts build_environment post_transaction"
 # All of the signing related variables we will accept from framework.conf.
 readonly dkms_framework_signing_variables="sign_file mok_signing_key mok_certificate"
 
@@ -1380,6 +1379,12 @@ prepare_signing()
 do_build()
 {
     [[ $kernelver && $arch ]] || die 16 "do_build: Empty \$kernelver or \$arch"
+
+    # Source build environment file if specified
+    if [[ -n "$build_environment" && -f "$build_environment" ]]; then
+        # shellcheck disable=SC1090
+        source "$build_environment"
+    fi
 
     # If the module has not been added, try to add it.
     if ! is_module_added "$module" "$module_version" ; then
@@ -3301,7 +3306,6 @@ addon_modules_dir="${ADDON_MODULES_DIR}"
 
 # Source in configuration not related to signing
 read_framework_conf "$dkms_framework_nonsigning_variables"
-
 
 # Clear out command line argument variables
 module=""

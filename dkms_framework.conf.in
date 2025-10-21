@@ -56,6 +56,10 @@
 # compress_xz_opts="--check=crc32 --lzma2=dict=1MiB -6"
 # compress_zstd_opts="-q --rm -T0 -3"
 
+# Path to a file containing environment variables to be sourced by DKMS.
+# This file will be sourced for the build command.
+# build_environment=""
+
 # Command to run at the end of every DKMS transaction, for example after a new
 # kernel has been installed on the system and all modules have been successfully
 # built and installed.
