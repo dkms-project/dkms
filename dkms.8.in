@@ -953,6 +953,27 @@ Run no more than this number of jobs in parallel.
 .B compress_gzip_opts, compress_xz_opts, compress_zstd_opts
 Control how modules are compressed. By default, the highest available level of compression is used.
 .TP
+.B build_environment
+If the directive is set to any non null-value, the content of the directive will be imported into the DKMS shell with the
+.B source
+command when building modules.
+
+Can be used to specify a custom
+.B gcc
+installed in a custom path; and the variable
+.B $kernelver
+can be used to represent the target kernel version. Some examples:
+
+Define a custom script to point to a specific GCC (
+.B CC=/opt/gcc12/bin/gcc
+):
+.B build_environment="/opt/gcc12/env"
+
+Enable the software collection
+.B gcc-toolset-11
+and use it for building an UEK kernel on Oracle Linux:
+.B build_environment="/opt/rh/gcc-toolset-11/enable"
+.TP
 .B post_transaction
 If the directive is set to any non null-value, the content of the directive will be executed with any command that change the content of the kernel modules folder, that is
 .B dkms autoinstall, dkms install
