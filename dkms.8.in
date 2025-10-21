@@ -954,18 +954,18 @@ Run no more than this number of jobs in parallel.
 Control how modules are compressed. By default, the highest available level of compression is used.
 .TP
 .B build_environment
-If the directive is set to any non null-value, the content of the directive will be imported into the DKMS shell with the
+If the directive is set to any non null-value, when building modules, the exported variables that are in the file will be imported into the DKMS shell with the
 .B source
-command when building modules.
+command.
 
 Can be used to specify a custom
 .B gcc
 installed in a custom path; and the variable
 .B $kernelver
-can be used to represent the target kernel version. Some examples:
+can be used inside the environment file to represent the target kernel version. Some examples:
 
 Define a custom script to point to a specific GCC (
-.B CC=/opt/gcc12/bin/gcc
+.B export CC=/opt/gcc12/bin/gcc
 ):
 .B build_environment="/opt/gcc12/env"
 
