@@ -1380,12 +1380,6 @@ do_build()
 {
     [[ $kernelver && $arch ]] || die 16 "do_build: Empty \$kernelver or \$arch"
 
-    # Source build environment file if specified
-    if [[ -n "$build_environment" && -f "$build_environment" ]]; then
-        # shellcheck disable=SC1090
-        source "$build_environment"
-    fi
-
     # If the module has not been added, try to add it.
     if ! is_module_added "$module" "$module_version" ; then
         add_module
@@ -1477,6 +1471,12 @@ do_build()
                 export KERNEL_LD
             fi
         fi
+    fi
+
+    # Source build environment file if specified
+    if [[ -n "$build_environment" && -f "$build_environment" ]]; then
+        # shellcheck disable=SC1090
+        source <( (source "$build_environment" &>/dev/null; export -p) )
     fi
 
     # Check for missing BUILD_DEPENDS

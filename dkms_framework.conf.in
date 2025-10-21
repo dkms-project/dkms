@@ -57,7 +57,8 @@
 # compress_zstd_opts="-q --rm -T0 -3"
 
 # Path to a file containing environment variables to be sourced by DKMS.
-# This file will be sourced for the build command.
+# This file will be sourced for the build command. $kernelver can be used in
+# the environment file to represent the target kernel version.
 # build_environment=""
 
 # Command to run at the end of every DKMS transaction, for example after a new
