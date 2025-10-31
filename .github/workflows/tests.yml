@@ -23,8 +23,6 @@ jobs:
           - {name: "alpine", tag: "3.21", variant: "-virt"}
           - {name: "alpine", tag: "3.20", variant: "-lts"}
           - {name: "alpine", tag: "3.20", variant: "-virt"}
-          - {name: "alpine", tag: "3.19", variant: "-lts"}
-          - {name: "alpine", tag: "3.19", variant: "-virt"}
           - {name: "archlinux", tag: "latest"}
           - {name: "archlinux", tag: "latest", variant: "-lts"}
           - {name: "archlinux", tag: "latest", variant: "-zen"}
@@ -33,14 +31,16 @@ jobs:
           - {name: "debian", tag: "13"}
           - {name: "debian", tag: "12"}
           - {name: "fedora", tag: "rawhide", url: "registry.fedoraproject.org/"}
+          - {name: "fedora", tag: "43", url: "registry.fedoraproject.org/"}
           - {name: "fedora", tag: "42", url: "registry.fedoraproject.org/"}
-          - {name: "fedora", tag: "41", url: "registry.fedoraproject.org/"}
           - {name: "gentoo/stage3", tag: "latest"}
           - {name: "opensuse/tumbleweed", tag: "latest", variant: "-default", url: "registry.opensuse.org/"}
           - {name: "opensuse/leap", tag: "15.6", variant: "-default", url: "registry.opensuse.org/"}
+          - {name: "opensuse/leap", tag: "16.0", variant: "-default", url: "registry.opensuse.org/"}
           - {name: "oraclelinux", tag: "10", uek: "ol10_UEKR8"}
           - {name: "oraclelinux", tag: "9", uek: "ol9_UEKR8", gcc: "gcc-toolset-14"}
           - {name: "oraclelinux", tag: "8", uek: "ol8_UEKR7", gcc: "gcc-toolset-11"}
+          - {name: "ubuntu", tag: "25.10"}
           - {name: "ubuntu", tag: "25.04"}
           - {name: "ubuntu", tag: "24.04"}
           - {name: "ubuntu", tag: "22.04"}
