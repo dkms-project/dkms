@@ -54,7 +54,7 @@ jobs:
       # openSUSE Leap 15.6 does not have tar in the base image
       run: |
         zypper --non-interactive install tar gzip
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Install dependencies for Red Hat based distributions
       if: matrix.distro.name == 'almalinux' || matrix.distro.name == 'centos' || matrix.distro.name == 'fedora'
