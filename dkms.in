@@ -813,7 +813,7 @@ read_conf() {
     # Only set global BUILD_EXCLUSIVE_KERNEL_MAX if obsolete_by is set and no global or per-module restrictions exist
     if [[ $obsolete_by && ! $BUILD_EXCLUSIVE_KERNEL_MAX ]]; then
         # Check if we have any per-module KERNEL_MAX restrictions
-        local has_per_module_max=false
+        local i has_per_module_max=false
         for ((i=0; i < num_modules; i++)); do
             [[ ${BUILD_EXCLUSIVE_KERNEL_MAX[i]} ]] && has_per_module_max=true && break
         done
