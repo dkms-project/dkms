@@ -2,7 +2,7 @@
 
 This intention of this README is to explain how DKMS can be used in conjunction with tarballs which contain a dkms.conf file within them.
 
-The DKMS project (and any updates) can be found at: https://github.com/dell/dkms
+The DKMS project (and any updates) can be found at: https://github.com/dkms-project/dkms
 
 
 ## Installation
@@ -190,4 +190,4 @@ For maximum compatibility, DKMS generates the MOK certificate with a *2048 bit R
 
 Once DKMS is installed, you can reference its man page for further information on different DKMS options and also to understand the formatting of a module's `dkms.conf` configuration file.
 
-The DKMS project is located at: https://github.com/dell/dkms
+The DKMS project is located at: https://github.com/dkms-project/dkms

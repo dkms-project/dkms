@@ -1021,4 +1021,4 @@ intervention is required.
 .SH AUTHOR
 Gary Lerhaupt, Emil Velikov, Simone Caronni, Xu Zhen
 .SH WEBPAGE
-.I https://github.com/dell/dkms
+.I https://github.com/dkms-project/dkms
