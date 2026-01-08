@@ -1,6 +1,7 @@
+---
 name: Run tests
 
-on:
+'on':
   # Build at 23:00 every Sunday
   schedule:
     - cron: "0 23 * * 1"
@@ -14,139 +15,264 @@ jobs:
     strategy:
       matrix:
         distro:
-          - {name: "almalinux", tag: "10"}
-          - {name: "almalinux", tag: "9"}
-          - {name: "almalinux", tag: "8"}
-          - {name: "alpine", tag: "3.22", variant: "-lts"}
-          - {name: "alpine", tag: "3.22", variant: "-virt"}
-          - {name: "alpine", tag: "3.21", variant: "-lts"}
-          - {name: "alpine", tag: "3.21", variant: "-virt"}
-          - {name: "alpine", tag: "3.20", variant: "-lts"}
-          - {name: "alpine", tag: "3.20", variant: "-virt"}
-          - {name: "archlinux", tag: "latest"}
-          - {name: "archlinux", tag: "latest", variant: "-lts"}
-          - {name: "archlinux", tag: "latest", variant: "-zen"}
-          - {name: "centos", tag: "stream10", url: "quay.io/centos/"}
-          - {name: "centos", tag: "stream9", url: "quay.io/centos/"}
-          - {name: "debian", tag: "13"}
-          - {name: "debian", tag: "12"}
-          - {name: "fedora", tag: "rawhide", url: "registry.fedoraproject.org/"}
-          - {name: "fedora", tag: "43", url: "registry.fedoraproject.org/"}
-          - {name: "fedora", tag: "42", url: "registry.fedoraproject.org/"}
-          - {name: "gentoo/stage3", tag: "latest"}
-          - {name: "opensuse/tumbleweed", tag: "latest", variant: "-default", url: "registry.opensuse.org/"}
-          - {name: "opensuse/leap", tag: "15.6", variant: "-default", url: "registry.opensuse.org/"}
-          - {name: "opensuse/leap", tag: "16.0", variant: "-default", url: "registry.opensuse.org/"}
-          - {name: "oraclelinux", tag: "10", uek: "ol10_UEKR8"}
-          - {name: "oraclelinux", tag: "9", uek: "ol9_UEKR8", gcc: "gcc-toolset-14"}
-          - {name: "oraclelinux", tag: "8", uek: "ol8_UEKR7", gcc: "gcc-toolset-11"}
-          - {name: "ubuntu", tag: "25.10"}
-          - {name: "ubuntu", tag: "25.04"}
-          - {name: "ubuntu", tag: "24.04"}
-          - {name: "ubuntu", tag: "22.04"}
+          - name: almalinux
+            tag: "10"
+            image: "almalinux:10"
+          - name: almalinux
+            tag: "9"
+            image: "almalinux:9"
+          - name: almalinux
+            tag: "8"
+            image: "almalinux:8"
+          - name: alpine
+            tag: "3.22"
+            variant: "-lts"
+            image: "alpine:3.22"
+          - name: alpine
+            tag: "3.22"
+            variant: "-virt"
+            image: "alpine:3.22"
+          - name: alpine
+            tag: "3.21"
+            variant: "-lts"
+            image: "alpine:3.21"
+          - name: alpine
+            tag: "3.21"
+            variant: "-virt"
+            image: "alpine:3.21"
+          - name: alpine
+            tag: "3.20"
+            variant: "-lts"
+            image: "alpine:3.20"
+          - name: alpine
+            tag: "3.20"
+            variant: "-virt"
+            image: "alpine:3.20"
+          - name: archlinux
+            tag: "latest"
+            variant: ""
+            image: "archlinux:latest"
+          - name: archlinux
+            tag: "latest"
+            variant: "-lts"
+            image: "archlinux:latest"
+          - name: archlinux
+            tag: "latest"
+            variant: "-zen"
+            image: "archlinux:latest"
+          - name: centos
+            tag: "stream10"
+            image: "quay.io/centos/centos:stream10"
+          - name: centos
+            tag: "stream9"
+            image: "quay.io/centos/centos:stream9"
+          - name: debian
+            tag: "13"
+            image: "debian:13"
+          - name: debian
+            tag: "12"
+            image: "debian:12"
+          - name: fedora
+            tag: "rawhide"
+            image: "registry.fedoraproject.org/fedora:rawhide"
+          - name: fedora
+            tag: "43"
+            image: "registry.fedoraproject.org/fedora:43"
+          - name: fedora
+            tag: "42"
+            image: "registry.fedoraproject.org/fedora:42"
+          - name: gentoo/stage3
+            tag: "latest"
+            image: "gentoo/stage3:latest"
+          - name: opensuse/tumbleweed
+            tag: "latest"
+            variant: "-default"
+            image: "registry.opensuse.org/opensuse/tumbleweed:latest"
+          - name: opensuse/leap
+            tag: "15.6"
+            variant: "-default"
+            image: "registry.opensuse.org/opensuse/leap:15.6"
+          - name: opensuse/leap
+            tag: "16.0"
+            variant: "-default"
+            image: "registry.opensuse.org/opensuse/leap:16.0"
+          - name: oraclelinux
+            tag: "10"
+            uek: "ol10_UEKR8"
+            image: "oraclelinux:10"
+          - name: oraclelinux
+            tag: "9"
+            uek: "ol9_UEKR8"
+            gcc: "gcc-toolset-14"
+            image: "oraclelinux:9"
+          - name: oraclelinux
+            tag: "8"
+            uek: "ol8_UEKR7"
+            gcc: "gcc-toolset-11"
+            image: "oraclelinux:8"
+          - name: ubuntu
+            tag: "25.10"
+            image: "ubuntu:25.10"
+          - name: ubuntu
+            tag: "25.04"
+            image: "ubuntu:25.04"
+          - name: ubuntu
+            tag: "24.04"
+            image: "ubuntu:24.04"
+          - name: ubuntu
+            tag: "22.04"
+            image: "ubuntu:22.04"
     runs-on: ubuntu-24.04
     container:
-      image: ${{ matrix.distro.url }}${{ matrix.distro.name }}:${{ matrix.distro.tag }}
+      image: ${{ matrix.distro.image }}
 
     steps:
-    - name: Checkout
-      if: matrix.distro.name == 'opensuse/leap' && matrix.distro.tag == '15.6'
-      # openSUSE Leap 15.6 does not have tar in the base image
-      run: |
-        zypper --non-interactive install tar gzip
-    - uses: actions/checkout@v6
+      - name: Checkout
+        if: >-
+          matrix.distro.name == 'opensuse/leap' &&
+          matrix.distro.tag == '15.6'
+        # openSUSE Leap 15.6 does not have tar in the base image
+        run: |
+          zypper --non-interactive install tar gzip
+      - uses: actions/checkout@v6
 
-    - name: Install dependencies for Red Hat based distributions
-      if: matrix.distro.name == 'almalinux' || matrix.distro.name == 'centos' || matrix.distro.name == 'fedora'
-      # Relax crypto policies to allow RSA signatures
-      run: |
-        dnf install -y gawk diffutils elfutils-libelf gcc kernel kernel-devel make openssl patch crypto-policies-scripts
-        update-crypto-policies --set LEGACY
-        make install-redhat
+      - name: Install dependencies for Red Hat based distributions
+        if: >-
+          matrix.distro.name == 'almalinux' ||
+          matrix.distro.name == 'centos' ||
+          matrix.distro.name == 'fedora'
+        # Relax crypto policies to allow RSA signatures
+        run: |
+          dnf install -y \
+            gawk diffutils elfutils-libelf gcc \
+            kernel kernel-devel make \
+            openssl patch crypto-policies-scripts
+          update-crypto-policies --set LEGACY
+          make install-redhat
 
-    - name: Install dependencies for Oracle Linux
-      if: matrix.distro.name == 'oraclelinux'
-      # Relax crypto policies to allow RSA signatures
-      run: |
-        dnf config-manager --set-enabled ${{ matrix.distro.uek }}
-        dnf install -y gawk diffutils elfutils-libelf gcc kernel-uek kernel-uek-devel make openssl patch crypto-policies-scripts
-        update-crypto-policies --set LEGACY
-        make install-redhat
-        if [ -n "${{ matrix.distro.gcc }}" ]; then
-          echo "build_environment=\"/opt/rh/${{ matrix.distro.gcc }}/enable\"" >> /etc/dkms/framework.conf.d/uek.conf
-        fi
+      - name: Install dependencies for Oracle Linux
+        if: matrix.distro.name == 'oraclelinux'
+        # Relax crypto policies to allow RSA signatures
+        run: |
+          uek='${{ matrix.distro.uek }}'
+          dnf config-manager --set-enabled "${uek}"
+          dnf install -y \
+            gawk diffutils elfutils-libelf gcc \
+            kernel-uek kernel-uek-devel make \
+            openssl patch crypto-policies-scripts
+          update-crypto-policies --set LEGACY
+          make install-redhat
+          if [ -n "${{ matrix.distro.gcc }}" ]; then
+            build_environment="/opt/rh/${{ matrix.distro.gcc }}/enable"
+            echo "build_environment=\"${build_environment}\"" \
+              >> /etc/dkms/framework.conf.d/uek.conf
+          fi
 
-    - name: Install Alpine dependencies
-      if: matrix.distro.name == 'alpine'
-      run: |
-        apk --no-cache --update add bash gcc linux-headers linux${{ matrix.distro.variant }} linux${{ matrix.distro.variant }}-dev make openssl coreutils patch
-        make install
+      - name: Install Alpine dependencies
+        if: matrix.distro.name == 'alpine'
+        run: |
+          variant='${{ matrix.distro.variant }}'
+          apk --no-cache --update add \
+            bash gcc linux-headers \
+            "linux${variant}" "linux${variant}-dev" \
+            make openssl coreutils patch
+          make install
 
-    - name: Install Arch Linux dependencies
-      if: matrix.distro.name == 'archlinux'
-      run: |
-        pacman -Syu --noconfirm diffutils gcc make linux${{ matrix.distro.variant }} linux${{ matrix.distro.variant }}-headers openssl patch
-        make install
+      - name: Install Arch Linux dependencies
+        if: matrix.distro.name == 'archlinux'
+        run: |
+          variant='${{ matrix.distro.variant }}'
+          pacman -Syu --noconfirm \
+            diffutils gcc make \
+            "linux${variant}" "linux${variant}-headers" \
+            openssl patch
+          make install
 
-    - name: Install Debian dependencies
-      if: matrix.distro.name == 'debian'
-      run: |
-        export DEBIAN_FRONTEND=noninteractive
-        apt-get update -q
-        apt-get install -qy make linux-headers-amd64 linux-image-amd64 openssl xz-utils patch
-        make install-debian
+      - name: Install Debian dependencies
+        if: matrix.distro.name == 'debian'
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -q
+          apt-get install -qy \
+            make \
+            linux-headers-amd64 linux-image-amd64 \
+            openssl xz-utils patch
+          make install-debian
 
-    - name: Install Gentoo Linux dependencies
-      if: matrix.distro.name == 'gentoo/stage3'
-      run: |
-        echo -e "MAKEOPTS=\"-j$(nproc) -l$(nproc)\"\nACCEPT_LICENSE=\"*\"" >> /etc/portage/make.conf
-        wget --progress=dot:mega -O - https://github.com/gentoo-mirror/gentoo/archive/master.tar.gz | tar -xz && mv gentoo-master /var/db/repos/gentoo
-        FEATURES="getbinpkg binpkg-ignore-signature parallel-fetch parallel-install pkgdir-index-trusted" USE="-initramfs" emerge --quiet --noreplace -j$(nproc) -l$(nproc) --autounmask-continue --with-bdeps=n '>=sys-kernel/gentoo-kernel-bin-6.6.0'
-        make install
+      - name: Install Gentoo Linux dependencies
+        if: matrix.distro.name == 'gentoo/stage3'
+        run: |
+          nproc_val="$(nproc)"
+          echo "MAKEOPTS=\"-j${nproc_val} -l${nproc_val}\"" \
+            >> /etc/portage/make.conf
+          echo "ACCEPT_LICENSE=\"*\"" >> /etc/portage/make.conf
 
-    - name: Install openSUSE leap dependencies
-      if: contains(matrix.distro.name, 'opensuse')
-      run: |
-        zypper --non-interactive install diffutils elfutils gcc kernel${{ matrix.distro.variant }} kernel${{ matrix.distro.variant }}-devel make openssl patch zstd
-        make install
+          gentoo_repo_url='https://github.com/gentoo-mirror/gentoo/archive/'\
+            'master.tar.gz'
+          wget --progress=dot:mega -O - "${gentoo_repo_url}" | tar -xz
+          mv gentoo-master /var/db/repos/gentoo
 
-    - name: Install Ubuntu dependencies
-      if: matrix.distro.name == 'ubuntu'
-      run: |
-        export DEBIAN_FRONTEND=noninteractive
-        apt-get update -q
-        apt-get install -qy gcc make linux-headers-generic linux-image-generic openssl shim-signed patch
-        make install-debian
+          FEATURES='getbinpkg binpkg-ignore-signature parallel-fetch' \
+          USE='-initramfs' \
+          emerge --quiet --noreplace \
+            -j"${nproc_val}" -l"${nproc_val}" \
+            --autounmask-continue --with-bdeps=n \
+            '>=sys-kernel/gentoo-kernel-bin-6.6.0'
+          make install
 
-    - name: Run tests
-      run: |
-        for moddir in /usr/lib/modules/ /lib/modules/; do
-            if [ -e "$moddir" ]; then
-                kernels=$(find "$moddir" -maxdepth 1 -type d -exec basename {} \;)
-                break
+      - name: Install openSUSE leap dependencies
+        if: contains(matrix.distro.name, 'opensuse')
+        run: |
+          variant='${{ matrix.distro.variant }}'
+          zypper --non-interactive install \
+            diffutils elfutils gcc \
+            "kernel${variant}" "kernel${variant}-devel" \
+            make openssl patch zstd
+          make install
+
+      - name: Install Ubuntu dependencies
+        if: matrix.distro.name == 'ubuntu'
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -q
+          apt-get install -qy \
+            gcc make \
+            linux-headers-generic linux-image-generic \
+            openssl shim-signed patch
+          make install-debian
+
+      - name: Run tests
+        run: |
+          for moddir in /usr/lib/modules/ /lib/modules/; do
+            if [ -e "${moddir}" ]; then
+              kernels="$(
+                find "${moddir}" -maxdepth 1 -type d \
+                  -exec basename {} \;
+              )"
+              break
             fi
-        done
+          done
 
-        # There should be two entries - "modules" and the kernel we installed
-        if [ $(echo "${kernels}" | wc -l) -ne 2 ]; then
+          # There should be two entries - "modules" and the kernel we installed
+          if [ "$(printf '%s\n' "${kernels}" | wc -l)" -ne 2 ]; then
             echo >&2 "Error: invalid number of kernels installed"
-        fi
+          fi
 
-        KERNEL_VER=$(echo "${kernels}" | tail -n1)
-        if [ -z "${KERNEL_VER}" ] ; then
+          KERNEL_VER="$(printf '%s\n' "${kernels}" | tail -n 1)"
+          if [ -z "${KERNEL_VER}" ] ; then
             echo >&2 "Error: no kernel package found"
             exit 1
-        fi
+          fi
 
-        echo "Found kernel ${KERNEL_VER}"
-        export KERNEL_VER
+          echo "Found kernel ${KERNEL_VER}"
+          export KERNEL_VER
 
-        echo "Module search paths"
-        for depmod in /etc/depmod.d/ /usr/lib/depmod.d/ /lib/depmod.d/; do
-            [ -e "$depmod" ] && grep -r ^search "$depmod" || true
-        done
+          echo "Module search paths"
+          for depmod in /etc/depmod.d/ /usr/lib/depmod.d/ /lib/depmod.d/; do
+            [ -e "${depmod}" ] && grep -r ^search "${depmod}" || true
+          done
 
-        # Run all tests
-        ./run_test.sh
+          # Run all tests
+          ./run_test.sh
 
-        make uninstall
+          make uninstall
