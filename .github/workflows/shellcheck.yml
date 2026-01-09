@@ -1,7 +1,6 @@
----
 name: Shellcheck
 
-'on':
+on:
   push:
   pull_request:
 
