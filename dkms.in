@@ -53,7 +53,7 @@
 # 5: prepare_build(): Patch ... as specified in dkms.conf cannot be found in ...
 # 5: install: This module/version combo is already installed for kernel ...
 # 6: prepare_build(): Application of patch ... failed.
-# 6: install: You cannot install a module onto a non-existant kernel.
+# 6: install: You cannot install a module onto a non-existent kernel.
 # 6: install: Installation aborted.
 # 6: install: Install Failed (depmod problems). Module rolled back to built state.
 # 6: make_tarball(): Modules must already be in the built state before using mktarball.
@@ -73,7 +73,7 @@
 # 12: setup_kernels_arches(): Could not determine architecture.
 # 13: build: Aborting build of module ... for kernel ... due to missing BUILD_DEPENDS: ...
 # 14: kernel_preinst/prerm: dkms kernel_preinst/prerm for kernel ... failed for module(s) ...
-# 15: gloabl: a call to cd failed
+# 15: global: a call to cd failed
 # 16: setup_kernels_arches()/do_build()/do_install(): empty $kernelver or $arch
 # 21: prepare_kernel(): Your kernel headers for kernel ... cannot be found ...
 # 77: skipped due to BUILD_EXCLUSIVE
@@ -1723,7 +1723,7 @@ do_install()
     # Make sure that kernel exists to install into
     [[ -e $install_tree/$kernelver ]] || die 6 \
         "The directory $install_tree/$kernelver doesn't exist." \
-        "You cannot install a module onto a non-existant kernel."
+        "You cannot install a module onto a non-existent kernel."
 
     # Read the conf file
     set_module_suffix "$kernelver"
@@ -2557,7 +2557,7 @@ make_tarball()
         local -r binary_only_dir="$temp_dir_name/dkms_binaries_only"
 
         echo ""
-        echo "Creating tarball structure to specifically accomodate binaries."
+        echo "Creating tarball structure to specifically accommodate binaries."
 
         mkdir "$binary_only_dir"
         echo "$module" > "$binary_only_dir/PACKAGE_NAME"
