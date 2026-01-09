@@ -169,15 +169,15 @@ fi
 
 # On 1st installation, let us look for a directory
 # in $MODDIR which matches $(uname -r). If none
-# is found it is possible that buildd is being used
+# is found it is possible that a build daemon is being used
 # and that uname -r is giving us the name of the
-# kernel used by the buildd machine.
+# kernel used by the build daemon machine.
 #
 # If this is the case we try to build the kernel
 # module for each kernel which has a directory in
 # $MODDIR. Furthermore we will have to tell
 # DKMS which architecture it should build the module
-# for (e.g. if the buildd machine is using a
+# for (e.g. if the build daemon machine is using a
 # 2.6.24-23-xen 64bit kernel).
 #
 # NOTE: if the headers are not installed then the

@@ -307,7 +307,7 @@ remove_module_source_tree() {
             /usr/src/*)
                 ;;
             *)
-                echo "Unsuported module source tree location '$p'"
+                echo "Unsupported module source tree location '$p'"
                 exit 1
                 ;;
         esac
