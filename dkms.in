@@ -979,6 +979,50 @@ read_conf() {
         [[ $has_per_module_max == false ]] && BUILD_EXCLUSIVE_KERNEL_MAX=$obsolete_by
     fi
 
+    check_build_exclusive_for_module() {
+        local module_index="$1"
+        local kernel_version="$2"
+        local arch="$3"
+
+        if [[ $BUILD_EXCLUSIVE_KERNEL || $BUILD_EXCLUSIVE_KERNEL_MIN || $BUILD_EXCLUSIVE_KERNEL_MAX || $BUILD_EXCLUSIVE_ARCH || $BUILD_EXCLUSIVE_CONFIG ]]; then
+            has_build_exclusive_directives=true
+        elif [[ ${BUILD_EXCLUSIVE_KERNEL[$module_index]} || ${BUILD_EXCLUSIVE_KERNEL_MIN[$module_index]} || ${BUILD_EXCLUSIVE_KERNEL_MAX[$module_index]} || ${BUILD_EXCLUSIVE_ARCH[$module_index]} || ${BUILD_EXCLUSIVE_CONFIG[$module_index]} ]]; then
+            has_build_exclusive_directives=true
+        fi
+
+        [[ $BUILD_EXCLUSIVE_KERNEL && ! $kernel_version =~ $BUILD_EXCLUSIVE_KERNEL ]] && return 1
+        [[ $BUILD_EXCLUSIVE_KERNEL_MIN && "$(VER "$kernel_version")" < "$(VER "$BUILD_EXCLUSIVE_KERNEL_MIN")" ]] && return 1
+        [[ $BUILD_EXCLUSIVE_KERNEL_MAX && "$(VER "$kernel_version")" > "$(VER "$BUILD_EXCLUSIVE_KERNEL_MAX")" ]] && return 1
+        [[ $BUILD_EXCLUSIVE_ARCH && ! $arch =~ $BUILD_EXCLUSIVE_ARCH ]] && return 1
+
+        [[ ${BUILD_EXCLUSIVE_KERNEL[$module_index]} && ! $kernel_version =~ ${BUILD_EXCLUSIVE_KERNEL[$module_index]} ]] && return 1
+        [[ ${BUILD_EXCLUSIVE_KERNEL_MIN[$module_index]} && "$(VER "$kernel_version")" < "$(VER "${BUILD_EXCLUSIVE_KERNEL_MIN[$module_index]}")" ]] && return 1
+        [[ ${BUILD_EXCLUSIVE_KERNEL_MAX[$module_index]} && "$(VER "$kernel_version")" > "$(VER "${BUILD_EXCLUSIVE_KERNEL_MAX[$module_index]}")" ]] && return 1
+        [[ ${BUILD_EXCLUSIVE_ARCH[$module_index]} && ! $arch =~ ${BUILD_EXCLUSIVE_ARCH[$module_index]} ]] && return 1
+
+        if [[ $BUILD_EXCLUSIVE_CONFIG && -e "${kernel_config}" ]]; then
+            local kconf
+            for kconf in $BUILD_EXCLUSIVE_CONFIG ; do
+                case "$kconf" in
+                    !*) grep -q "^${kconf#!}=[ym]" "${kernel_config}" && return 1 ;;
+                    *)  grep -q "^${kconf}=[ym]" "${kernel_config}" || return 1 ;;
+                esac
+            done
+        fi
+
+        if [[ ${BUILD_EXCLUSIVE_CONFIG[$module_index]} && -e "${kernel_config}" ]]; then
+            local kconf
+            for kconf in ${BUILD_EXCLUSIVE_CONFIG[$module_index]} ; do
+                case "$kconf" in
+                    !*) grep -q "^${kconf#!}=[ym]" "${kernel_config}" && return 1 ;;
+                    *)  grep -q "^${kconf}=[ym]" "${kernel_config}" || return 1 ;;
+                esac
+            done
+        fi
+
+        return 0
+    }
+
     # Check if any module should be excluded from build
     build_exclude=""
     buildable_modules=0
@@ -1368,7 +1412,7 @@ do_build()
     # Error out if source_tree is basically empty (binary-only dkms tarball w/ --force check)
     # shellcheck disable=SC1083,SC2012
     # TODO: use find instead of ls
-    (($(ls "$source_dir" | wc -l | awk {'print $1'}) < 2)) && die 8 \
+    (($(ls "$source_dir" | wc -l | awk '{print $1}') < 2)) && die 8 \
         "The directory $source_dir does not appear to have module source located within it."\
         "Build halted."
 
@@ -2226,7 +2270,7 @@ remove_module()
     # Get rid of any remnant directories if necessary
     # shellcheck disable=SC2012
     # TODO: use find instead
-    if (($(ls "$dkms_tree/$module" | wc -w | awk {'print $1}') == 0)); then
+    if (($(ls "$dkms_tree/$module" | wc -w | awk '{print $1}') == 0)); then
         rm -rf "${dkms_tree:?}/$module" 2>/dev/null
     fi
 }
@@ -2523,7 +2567,7 @@ make_tarball()
     fi
 
     # shellcheck disable=SC1083
-    if (( $(echo "$kernel_version_list" | wc -m | awk {'print $1'}) > 200 )); then
+    if (( $(echo "$kernel_version_list" | wc -m | awk '{print $1}') > 200 )); then
         kernel_version_list="manykernels"
     fi
 
@@ -2718,9 +2762,9 @@ run_match()
     # Iterate over the kernel_status and match kernel to the template_kernel
     while read -r template_line; do
         # shellcheck disable=SC1083
-        template_module=$(echo "$template_line" | awk {'print $1'} | sed 's/,$//')
+        template_module=$(echo "$template_line" | awk '{print $1}' | sed 's/,$//')
         # shellcheck disable=SC1083
-        template_version=$(echo "$template_line" | awk {'print $2'} | sed 's/,$//')
+        template_version=$(echo "$template_line" | awk '{print $2}' | sed 's/,$//')
 
         # Print out a match header
         echo "Module:  $template_module"
