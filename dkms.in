@@ -1283,8 +1283,9 @@ prepare_mok()
                     # Switch to the kernel's source directory while resolving
                     # the module signing key, since the path set within the config
                     # could be relative to the source directory
-                    local _pwd=$(pwd)
-                    cd $kernel_source_dir
+                    local _pwd
+                    _pwd="$(pwd)"
+                    cd "${kernel_source_dir}" || exit 15
 
                     mok_signing_key=$(grep "^CONFIG_MODULE_SIG_KEY=" "${kernel_config}" | cut -f2 -d= | sed 's/"//g')
                     # Assume the absolute path to the certificate
@@ -1293,7 +1294,7 @@ prepare_mok()
                     # the key and the certificate, so in this case both will be the same.
                     mok_certificate=${mok_signing_key}
 
-                    cd $_pwd
+                    cd "${_pwd}" || exit 15
                 fi
                 ;;
         esac
