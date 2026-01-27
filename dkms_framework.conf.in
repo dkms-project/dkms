@@ -31,6 +31,10 @@
 # represent the target kernel version. (default: depends on distribution):
 # sign_file="/path/to/sign-file"
 
+# Whether to try to sign modules. May be set to "true", "false", or
+# "not_in_chroot". (default: not_in_chroot)
+# try_sign_modules=not_in_chroot
+
 # Location of the key and certificate files used for Secure boot. $kernelver
 # can be used in path to represent the target kernel version.
 #

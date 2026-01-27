@@ -339,6 +339,33 @@ file_not_exists() {
     fi
 }
 
+# Check if the tests are running in a chroot. Copied from dkms main script.
+running_in_chroot() {
+    # Check for fakechroot usage. Works without root.
+    # shellcheck disable=SC2076
+    [[ "${FAKECHROOT-}" == 'true' && -v FAKECHROOT_BASE && "${LD_PRELOAD-}" =~ 'libfakechroot.so' ]] && return 0
+
+    # Check if our view of /proc/PID/mountinfo differs from the init process's view. Works without root.
+    if [[ -r /proc/1/mountinfo && -r /proc/self/mountinfo ]]; then
+        local init_mountinfo
+        local our_mountinfo
+        IFS= read -rd '' init_mountinfo < '/proc/1/mountinfo'
+        IFS= read -rd '' our_mountinfo < '/proc/self/mountinfo'
+        [[ "${init_mountinfo}" != "${our_mountinfo}" ]] && return 0
+    fi
+
+    # Check if our root directory differs from the init process's root directory, using inode and device numbers. Requires root.
+    if [[ "$(id -u)" = 0 ]]; then
+        local init_rootdir_info
+        local our_rootdir_info
+        init_rootdir_info="$(stat -L --format='%d %i' /proc/1/root)"
+        our_rootdir_info="$(stat -L --format='%d %i' /)"
+        [[ "${init_rootdir_info}" != "${our_rootdir_info}" ]] && return 0
+    fi
+
+    return 1
+}
+
 mod_compression_ext=
 kernel_config="/lib/modules/${KERNEL_VER}/build/.config"
 if [[ -f $kernel_config ]]; then
@@ -352,6 +379,12 @@ if [[ -f $kernel_config ]]; then
         mod_compression_ext=.zst
     fi
 fi
+
+is_running_in_chroot=false
+if running_in_chroot; then
+    is_running_in_chroot=true
+fi
+try_sign_modules_file='/etc/dkms/framework.conf.d/try_sign_modules.conf'
 
 # Compute the expected destination module location
 os_id="$(sed -n 's/^ID\s*=\s*\(.*\)$/\1/p' /etc/os-release | tr -d '"')"
@@ -430,6 +463,11 @@ DKMS_VERSION="$(dkms --version)"
 
 echo 'Preparing a clean test environment'
 clean_dkms_env
+
+if [[ $is_running_in_chroot = true ]] && (( NO_SIGNING_TOOL == 0 )); then
+    echo 'Enabling module signing in chroot'
+    install_framework_conf test/framework/try_sign_modules_true.conf "${try_sign_modules_file}"
+fi
 
 echo 'Test that there are no dkms modules installed'
 run_with_expected_output dkms status -k "${KERNEL_VER}" << EOF
@@ -966,6 +1004,55 @@ Module dkms_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
 Before uninstall, this module version was ACTIVE on this kernel.
 Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_test.ko${mod_compression_ext}
 Running depmod... done.
+
+Deleting module dkms_test/1.0 completely from the DKMS tree.
+EOF
+    run_status_with_expected_output 'dkms_test' << EOF
+EOF
+
+    echo 'Adding the test module'
+    run_with_expected_output dkms add test/dkms_test-1.0 << EOF
+Creating symlink /var/lib/dkms/dkms_test/1.0/source -> /usr/src/dkms_test-1.0
+EOF
+    check_module_source_tree_created /usr/src/dkms_test-1.0
+    run_status_with_expected_output 'dkms_test' << EOF
+dkms_test/1.0: added
+EOF
+
+    echo 'Building the test module with try_sign_modules=false'
+    install_framework_conf test/framework/try_sign_modules_false.conf "${try_sign_modules_file}"
+    run_with_expected_output dkms build -k "${KERNEL_VER}" -m dkms_test -v 1.0 --force << EOF
+Module signing is disabled by policy, modules won't be signed
+
+Building module(s)... done.
+EOF
+
+    echo 'Building the test module with try_sign_modules=true'
+    install_framework_conf test/framework/try_sign_modules_true.conf "${try_sign_modules_file}"
+    run_with_expected_output dkms build -k "${KERNEL_VER}" -m dkms_test -v 1.0 --force << EOF
+${SIGNING_PROLOGUE_tmp_key_cert}
+Building module(s)... done.${SIGNING_MESSAGE}
+EOF
+
+    if [[ $is_running_in_chroot = true ]]; then
+        echo 'Building the test module in a chroot with try_sign_modules=not_in_chroot'
+        install_framework_conf test/framework/try_sign_modules_not_in_chroot.conf "${try_sign_modules_file}"
+        run_with_expected_output dkms build -k "${KERNEL_VER}" -m dkms_test -v 1.0 --force << EOF
+Running in chroot, modules won't be signed
+
+Building module(s)... done.
+EOF
+
+        echo 'Re-enabling module signing in chroot'
+        install_framework_conf test/framework/try_sign_modules_true.conf "${try_sign_modules_file}"
+    else
+        echo 'Removing try_sign_modules configuration'
+        rm "${try_sign_modules_file}"
+    fi
+
+    echo 'Removing the test module'
+    run_with_expected_output dkms remove -k "${KERNEL_VER}" -m dkms_test -v 1.0 << EOF
+Module dkms_test/1.0 is not installed for kernel ${KERNEL_VER} (${KERNEL_ARCH}). Skipping...
 
 Deleting module dkms_test/1.0 completely from the DKMS tree.
 EOF
