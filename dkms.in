@@ -105,7 +105,8 @@ readonly dkms_framework_nonsigning_variables="source_tree dkms_tree install_tree
    verbose symlink_modules autoinstall_all_kernels modprobe_on_install parallel_jobs
    compress_gzip_opts compress_xz_opts compress_zstd_opts build_environment post_transaction"
 # All of the signing related variables we will accept from framework.conf.
-readonly dkms_framework_signing_variables="sign_file mok_signing_key mok_certificate"
+readonly dkms_framework_signing_variables="sign_file mok_signing_key mok_certificate
+   try_sign_modules"
 
 # The post transaction command we will accept from framework.conf
 readonly dkms_framework_post_transaction="post_transaction"
@@ -1174,6 +1175,37 @@ run_build_script() {
     fi
 }
 
+# A relatively straightforward port of the Linux-kernel-specific part of
+# Debian's "ischroot" command
+# (https://salsa.debian.org/debian/debianutils/-/blob/9d4fc3502659adc02ed7b0457bf77e88be3a971a/ischroot.c)
+# to Bash. Used for determining whether or not to sign kernel modules. Returns
+# 0 when running in a chroot, 1 when likely running outside of a chroot.
+running_in_chroot() {
+    # Check for fakechroot usage. Works without root.
+    # shellcheck disable=SC2076
+    [[ "${FAKECHROOT-}" == 'true' && -v FAKECHROOT_BASE && "${LD_PRELOAD-}" =~ 'libfakechroot.so' ]] && return 0
+
+    # Check if our view of /proc/PID/mountinfo differs from the init process's view. Works without root.
+    if [[ -r /proc/1/mountinfo && -r /proc/self/mountinfo ]]; then
+        local init_mountinfo
+        local our_mountinfo
+        IFS= read -rd '' init_mountinfo < '/proc/1/mountinfo'
+        IFS= read -rd '' our_mountinfo < '/proc/self/mountinfo'
+        [[ "${init_mountinfo}" != "${our_mountinfo}" ]] && return 0
+    fi
+
+    # Check if our root directory differs from the init process's root directory, using inode and device numbers. Requires root.
+    if [[ "$(id -u)" = 0 ]]; then
+        local init_rootdir_info
+        local our_rootdir_info
+        init_rootdir_info="$(stat -L --format='%d %i' /proc/1/root)"
+        our_rootdir_info="$(stat -L --format='%d %i' /)"
+        [[ "${init_rootdir_info}" != "${our_rootdir_info}" ]] && return 0
+    fi
+
+    return 1
+}
+
 # Register a DKMS-ified source tree with DKMS.
 # This function is smart enough to register the module if we
 # passed a source tree or a tarball instead of relying on the source tree
@@ -1342,6 +1374,17 @@ prepare_signing()
     read_framework_conf "$dkms_framework_signing_variables"
 
     do_signing=0
+
+    if [[ "${try_sign_modules-}" = 'false' ]]; then
+        echo "Module signing is disabled by policy, modules won't be signed"
+        return
+    fi
+
+    # if try_sign_modules is not "true" here, always act as if it is set to "not_in_chroot"
+    if [[ "${try_sign_modules-}" != 'true' ]] && running_in_chroot; then
+        echo "Running in chroot, modules won't be signed"
+        return
+    fi
 
     if [[ ! -f ${kernel_config} ]]; then
         echo "Kernel config ${kernel_config} not found, modules won't be signed"
