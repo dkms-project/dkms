@@ -555,6 +555,11 @@ safe_source() {
     . "$to_source_file" >/dev/null
     # This is really ugly, but a neat hack
     # Remember, in bash 2.0 and greater all variables are really arrays.
+    local _export_env
+    local _i
+    local directive
+    local directive_name
+    local directive_value
     for _export_env in "${export_envs[@]}"; do
         # shellcheck disable=SC1083,SC2294
         for _i in $(eval echo \${!"${_export_env}"[@]}); do
@@ -966,6 +971,7 @@ read_conf_strict()
 
 # Source specified variables from dkms framework configuration files.
 read_framework_conf() {
+    local i
     for i in /etc/dkms/framework.conf /etc/dkms/framework.conf.d/*.conf; do
         [[ -e "$i" ]] && safe_source "$i" "$@"
     done
@@ -2233,6 +2239,7 @@ maybe_uninstall_module()
 
             # If this package has any BUILD_EXCLUSIVE restrictions, suppress the message
             # because it can be confusing to users (modules might be built but not installed)
+            local index
             local has_build_exclusive=false
             for ((index=0; index < num_modules; index++)); do
                 if [[ ${BUILD_EXCLUSIVE_KERNEL[index]} || ${BUILD_EXCLUSIVE_KERNEL_MIN[index]} || ${BUILD_EXCLUSIVE_KERNEL_MAX[index]} || ${BUILD_EXCLUSIVE_ARCH[index]} || ${BUILD_EXCLUSIVE_CONFIG[index]} ]]; then
@@ -2430,6 +2437,7 @@ do_status_weak()
 # Spit out all the extra status information that people running DKMS are
 # interested in, but that the DKMS internals do not usually care about.
 module_status_built_extra() (
+    local count
     set_module_suffix "$3"
     read_conf "$3" "$4" "$dkms_tree/$1/$2/source/dkms.conf"
     [[ -d $dkms_tree/$1/original_module/$3/$4 ]] && echo -n " (Original modules exist)"
