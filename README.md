@@ -1,6 +1,6 @@
 # Dynamic Kernel Module System (DKMS)
 
-This intention of this README is to explain how DKMS can be used in conjunction with tarballs which contain a dkms.conf file within them.
+This intention of this README is to explain how DKMS can be used in conjunction with tarballs which contain a `dkms.conf` file within them.
 
 The DKMS project (and any updates) can be found at: https://github.com/dkms-project/dkms
 
@@ -16,7 +16,6 @@ make install-redhat
 ```
 
 Distribution specific installations (RPM, DEB, etc.) are not contained in this source repository.
-
 
 ## Installation of DKMS Tarballs
 
@@ -115,7 +114,6 @@ Signing key: /var/lib/dkms/mok.key
 Public certificate (MOK): /var/lib/dkms/mok.pub
 ```
 
-
 ## Secure Boot
 
 On an UEFI system with Secure Boot enabled, modules require signing (as described in the above paragraph) before they can be loaded and the firmware of the system must know the correct public certificate to verify the module signature.
@@ -184,7 +182,6 @@ The module can now be loaded without issues.
 UEFI specification 2.11 [contains a list of valid encryption keys](https://uefi.org/specs/UEFI/2.11/37_Secure_Technologies.html#encryption-algorithm-properties) for the MOK certificate.
 The list is quite limited, basically offering only RSA as a valid key type.
 For maximum compatibility, DKMS generates the MOK certificate with a *2048 bit RSA key with SHA-2 256 as a digest*.
-
 
 ## Further Documentation
 
