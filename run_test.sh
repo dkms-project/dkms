@@ -843,6 +843,7 @@ EOF
 
     echo 'Building the test module with a failing sign_file command'
     install_framework_conf test/framework/fail_sign_file_path.conf /etc/dkms/framework.conf.d/dkms_test_framework.conf
+    set_signing_message "dkms_test" "1.0"
     run_with_expected_output dkms build -k "${KERNEL_VER}" -m dkms_test -v 1.0 --force << EOF
 Sign command: /bin/false
 Signing key: ${tmpdir}/dkms_test_private_key
@@ -2700,6 +2701,8 @@ dkms_test/1.0: added
 EOF
 
 echo "Running dkms autoinstall with multiple modules"
+set_signing_message "dkms_dependencies_test" "1.0"
+SIGNING_MESSAGE_dependencies="$SIGNING_MESSAGE"
 set_signing_message "dkms_test" "1.0"
 run_with_expected_output dkms autoinstall -k "${KERNEL_VER}" << EOF
 ${SIGNING_PROLOGUE}
