@@ -17,6 +17,8 @@ jobs:
           - {name: "almalinux", tag: "10"}
           - {name: "almalinux", tag: "9"}
           - {name: "almalinux", tag: "8"}
+          - {name: "alpine", tag: "3.23", variant: "-lts"}
+          - {name: "alpine", tag: "3.23", variant: "-virt"}
           - {name: "alpine", tag: "3.22", variant: "-lts"}
           - {name: "alpine", tag: "3.22", variant: "-virt"}
           - {name: "alpine", tag: "3.21", variant: "-lts"}
@@ -30,7 +32,7 @@ jobs:
           - {name: "centos", tag: "stream9", url: "quay.io/centos/"}
           - {name: "debian", tag: "13"}
           - {name: "debian", tag: "12"}
-          - {name: "fedora", tag: "rawhide", url: "registry.fedoraproject.org/"}
+          #- {name: "fedora", tag: "rawhide", url: "registry.fedoraproject.org/"}
           - {name: "fedora", tag: "43", url: "registry.fedoraproject.org/"}
           - {name: "fedora", tag: "42", url: "registry.fedoraproject.org/"}
           - {name: "gentoo/stage3", tag: "latest"}
@@ -41,7 +43,7 @@ jobs:
           - {name: "oraclelinux", tag: "9", uek: "ol9_UEKR8", gcc: "gcc-toolset-14"}
           - {name: "oraclelinux", tag: "8", uek: "ol8_UEKR7", gcc: "gcc-toolset-11"}
           - {name: "ubuntu", tag: "25.10"}
-          - {name: "ubuntu", tag: "25.04"}
+          - {name: "ubuntu", tag: "26.04"}
           - {name: "ubuntu", tag: "24.04"}
           - {name: "ubuntu", tag: "22.04"}
     runs-on: ubuntu-24.04
@@ -85,7 +87,7 @@ jobs:
     - name: Install Arch Linux dependencies
       if: matrix.distro.name == 'archlinux'
       run: |
-        pacman -Syu --noconfirm diffutils gcc make linux${{ matrix.distro.variant }} linux${{ matrix.distro.variant }}-headers openssl patch
+        pacman -Syu --noconfirm diffutils gcc make linux${{ matrix.distro.variant }} linux${{ matrix.distro.variant }}-headers openssl patch xxhash
         make install
 
     - name: Install Debian dependencies
