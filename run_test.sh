@@ -58,6 +58,8 @@ TEST_MODULES=(
 )
 TEST_TMPDIRS=(
     "${tmpdir}/dkms_test_dir_${KERNEL_VER}/"
+    "/etc/dkms/dkms_patches_test/"
+    "/etc/dkms/dkms_scripts_test/"
 )
 TEST_TMPFILES=(
     "${tmpdir}/dkms_test_private_key"
@@ -2529,6 +2531,72 @@ EOF
 run_status_with_expected_output 'dkms_scripts_test' << EOF
 dkms_scripts_test/1.0: added
 EOF
+
+echo 'Testing patches override from /etc/dkms'
+mkdir -p /etc/dkms/dkms_patches_test/patches/subdir
+cp test/dkms_patches_test-1.0/patches/patch1.patch /etc/dkms/dkms_patches_test/patches/patch1.patch
+cp test/dkms_patches_test-1.0/patches/subdir/patch2.patch /etc/dkms/dkms_patches_test/patches/subdir/patch2.patch
+run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_patches_test -v 1.0 << EOF
+${SIGNING_PROLOGUE}
+Applying patch patch1.patch... done.
+Applying patch subdir/patch2.patch... done.
+Building module(s)... done.${SIGNING_MESSAGE_patches}
+Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_patches_test.ko${mod_compression_ext}
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_patches_test' << EOF
+dkms_patches_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
+EOF
+
+echo 'Unbuilding the test module with patches override'
+run_with_expected_output dkms unbuild -k "${KERNEL_VER}" -m dkms_patches_test -v 1.0 << EOF
+Module dkms_patches_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_patches_test.ko${mod_compression_ext}
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_patches_test' << EOF
+dkms_patches_test/1.0: added
+EOF
+rm -rf /etc/dkms/dkms_patches_test
+
+echo 'Testing scripts override from /etc/dkms'
+mkdir -p /etc/dkms/dkms_scripts_test
+cat > /etc/dkms/dkms_scripts_test/script.sh << 'SCRIPTEOF'
+#!/bin/sh
+echo "override $*"
+exit 0
+SCRIPTEOF
+chmod +x /etc/dkms/dkms_scripts_test/script.sh
+run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_scripts_test -v 1.0 << EOF
+${SIGNING_PROLOGUE}
+Running the pre_build script... done.
+Building module(s)... done.${SIGNING_MESSAGE_scripts}
+Running the post_build script... done.
+Running the pre_install script:
+override pre_install
+Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_scripts_test.ko${mod_compression_ext}
+Running the post_install script:
+override post_install
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_scripts_test' << EOF
+dkms_scripts_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
+EOF
+
+echo 'Unbuilding the test module with scripts override'
+run_with_expected_output dkms unbuild -k "${KERNEL_VER}" -m dkms_scripts_test -v 1.0 << EOF
+Module dkms_scripts_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_scripts_test.ko${mod_compression_ext}
+Running the post_remove script:
+override post_remove
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_scripts_test' << EOF
+dkms_scripts_test/1.0: added
+EOF
+rm -rf /etc/dkms/dkms_scripts_test
 
 echo 'Adding noisy test module'
 run_with_expected_output dkms add test/dkms_noisy_test-1.0 << EOF
