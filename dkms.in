@@ -88,14 +88,14 @@ readonly dkms_conf_variables="PACKAGE_NAME
    PACKAGE_VERSION POST_ADD POST_BUILD POST_INSTALL POST_REMOVE PRE_BUILD
    PRE_INSTALL BUILD_DEPENDS BUILD_EXCLUSIVE_ARCH BUILD_EXCLUSIVE_CONFIG
    BUILD_EXCLUSIVE_KERNEL BUILD_EXCLUSIVE_KERNEL_MIN BUILD_EXCLUSIVE_KERNEL_MAX
-   build_exclude OBSOLETE_BY MAKE MAKE_MATCH
+   build_exclude MAKE MAKE_MATCH
    PATCH PATCH_MATCH patch_array BUILT_MODULE_NAME
    built_module_name BUILT_MODULE_LOCATION built_module_location
    DEST_MODULE_NAME dest_module_name
    DEST_MODULE_LOCATION dest_module_location
    STRIP strip AUTOINSTALL NO_WEAK_MODULES BUILD_DEPENDS_REBUILD
 
-   CLEAN
+   OBSOLETE_BY CLEAN
    REMAKE_INITRD MODULES_CONF MODULES_CONF_OBSOLETES
    MODULES_CONF_ALIAS_TYPE MODULES_CONF_OBSOLETE_ONLY"
 show_deprecation_warnings=0
@@ -590,6 +590,8 @@ safe_source() {
     (( ${#MODULES_CONF_OBSOLETES[@]} )) && deprecated "MODULES_CONF_OBSOLETES ($to_source_file)"
     (( ${#MODULES_CONF_ALIAS_TYPE[@]} )) && deprecated "MODULES_CONF_ALIAS_TYPE ($to_source_file)"
     (( ${#MODULES_CONF_OBSOLETE_ONLY[@]} )) && deprecated "MODULES_CONF_OBSOLETE_ONLY ($to_source_file)"
+    # shellcheck disable=SC2153
+    (( ${#OBSOLETE_BY[@]} )) && deprecated "OBSOLETE_BY ($to_source_file): use BUILD_EXCLUSIVE_KERNEL_MAX instead"
 }
 
 # Source a dkms.conf file and perform appropriate postprocessing on it.

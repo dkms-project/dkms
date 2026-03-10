@@ -3283,6 +3283,7 @@ remove_module_source_tree /usr/src/dkms_crlf_test-1.0
 echo 'Testing dkms.conf with deprecated directives'
 run_with_expected_output dkms add test/dkms_deprecated_test-1.0 << EOF
 Deprecated feature: REMAKE_INITRD (/usr/src/dkms_deprecated_test-1.0/dkms.conf)
+Deprecated feature: OBSOLETE_BY (/usr/src/dkms_deprecated_test-1.0/dkms.conf): use BUILD_EXCLUSIVE_KERNEL_MAX instead
 Creating symlink /var/lib/dkms/dkms_deprecated_test/1.0/source -> /usr/src/dkms_deprecated_test-1.0
 EOF
 check_module_source_tree_created /usr/src/dkms_deprecated_test-1.0
@@ -3294,6 +3295,7 @@ echo ' Building and installing the test module'
 set_signing_message "dkms_deprecated_test" "1.0"
 run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_deprecated_test -v 1.0 << EOF
 Deprecated feature: REMAKE_INITRD (/var/lib/dkms/dkms_deprecated_test/1.0/source/dkms.conf)
+Deprecated feature: OBSOLETE_BY (/var/lib/dkms/dkms_deprecated_test/1.0/source/dkms.conf): use BUILD_EXCLUSIVE_KERNEL_MAX instead
 ${SIGNING_PROLOGUE}
 Building module(s)... done.${SIGNING_MESSAGE}
 Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_deprecated_test.ko${mod_compression_ext}
