@@ -389,7 +389,7 @@ fi
 try_sign_modules_file='/etc/dkms/framework.conf.d/try_sign_modules.conf'
 
 # Compute the expected destination module location
-os_id="$(sed -n 's/^ID\s*=\s*\(.*\)$/\1/p' /etc/os-release | tr -d '"')"
+os_id="$(sed -n 's/^ID\s*=\s*\(.*\)$/\1/p' /etc/os-release | tr -d "\"'")"
 distro_sign_file_candidates=
 distro_modsigkey=/var/lib/dkms/mok.key
 distro_modsigcert=/var/lib/dkms/mok.pub
