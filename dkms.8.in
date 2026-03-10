@@ -671,21 +671,19 @@ directory. The weak modules facility was designed to eliminate the need to rebui
 The kABI kernel module interface is currently supported on Red Hat Enterprise Linux (and derivatives), SUSE Linux Enterprise Server and openSUSE Leap; on other distributions this directive is ignored.
 .TP
 .B OBSOLETE_BY=
-This directive allows you to specify a kernel version that obsoletes the necessity for this
-particular DKMS module. This can be specified as a particular upstream kernel or an ABI
-bump of a kernel. For example, "2.6.24" would be an upstream kernel and "2.6.24\-16" would
-represent an ABI bump for a kernel. Both are valid in this area.
-
-Please consider using
+.B This directive is deprecated and will be removed in a future version.
+Consider using
 .B BUILD_EXCLUSIVE_KERNEL_MAX
 instead of
 .B OBSOLETE_BY
 as the former is a more general approach to solve the same problem.
 
-Please avoid the use of
-.B OBSOLETE_BY
-wherever possible. It's use indicates a lack of proper module
-versioning using
+It allows you to specify a kernel version that obsoletes the necessity for this particular DKMS module.
+This can be specified as a particular upstream kernel or an ABI bump of a kernel.
+For example, "2.6.24" would be an upstream kernel and "2.6.24\-16" would represent an ABI bump for a kernel.
+Both are valid in this area.
+
+Its use indicates a lack of proper module versioning using
 .B MODULE_VERSION()
 tags in the module source itself. It is better to fix the
 .B MODULE_VERSION()
