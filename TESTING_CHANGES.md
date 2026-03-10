@@ -35,7 +35,8 @@ $ sudo KERNEL_VER=$(uname -r) ./run_test.sh broken
 
 ## Cleaning up
 
-After making all the changes necessary to test new features, you can clean up the system with the following commands:
+After making all the changes necessary to test new features, you can clean up the system with the following command:
 
 ```
 $ sudo make uninstall
+```
