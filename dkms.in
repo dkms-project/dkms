@@ -2812,7 +2812,7 @@ run_match()
         if ! [[ -d $dkms_tree/$module/ ]]; then
             die 3 "The module: $module is not located in the DKMS tree."
         fi
-        template_kernel_status=$(echo "$template_kernel_status" | grep "^$module,")
+        template_kernel_status=$(echo "$template_kernel_status" | grep "^$module/")
     fi
 
     echo ""
@@ -2829,11 +2829,11 @@ run_match()
     prepare_kernel "$kernelver"
 
     # Iterate over the kernel_status and match kernel to the template_kernel
+    # Status line format: module/version, kernel, arch: installed
     while read -r template_line; do
-        # shellcheck disable=SC1083
-        template_module=$(echo "$template_line" | awk {'print $1'} | sed 's/,$//')
-        # shellcheck disable=SC1083
-        template_version=$(echo "$template_line" | awk {'print $2'} | sed 's/,$//')
+        template_module="${template_line%%/*}"
+        template_version="${template_line#*/}"
+        template_version="${template_version%%,*}"
 
         # Print out a match header
         echo "Module:  $template_module"

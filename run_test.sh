@@ -2820,6 +2820,30 @@ run_status_with_expected_output 'dkms_test' << EOF
 dkms_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
 EOF
 
+echo 'Testing dkms match (same kernel error)'
+run_with_expected_error 2 dkms match --templatekernel="${KERNEL_VER}" -k "${KERNEL_VER}" << EOF
+
+Error! The templatekernel and the specified kernel version are the same.
+EOF
+
+echo 'Testing dkms match with a specific module (nothing to match on fake template)'
+run_with_expected_output dkms match --templatekernel=fake_kernel -k "${KERNEL_VER}" -m dkms_test << EOF
+
+Matching modules in kernel: ${KERNEL_VER} (${KERNEL_ARCH})
+to the configuration of kernel: fake_kernel (${KERNEL_ARCH})
+
+There is nothing to be done for this match.
+EOF
+
+echo 'Testing dkms match without module (nothing to match on fake template)'
+run_with_expected_output dkms match --templatekernel=fake_kernel -k "${KERNEL_VER}" << EOF
+
+Matching modules in kernel: ${KERNEL_VER} (${KERNEL_ARCH})
+to the configuration of kernel: fake_kernel (${KERNEL_ARCH})
+
+There is nothing to be done for this match.
+EOF
+
 echo 'Running dkms kernel_prerm'
 run_with_expected_output dkms kernel_prerm -k "${KERNEL_VER}" << EOF
 dkms: removing module dkms_dependencies_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH})
