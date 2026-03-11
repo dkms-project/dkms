@@ -704,7 +704,10 @@ command.
 Each directive should specify the filename of the patch to apply, and all patches must
 be located in the patches subdirectory of your source directory (
 .I /usr/src/<module>\-<module\-version>/patches/
-). If any patch fails to apply, the build will be halted and the rejections can be
+) or in
+.I /etc/dkms/<module>/patches/
+(which takes precedence over the source directory).
+If any patch fails to apply, the build will be halted and the rejections can be
 inspected in
 .I /var/lib/dkms/<module>/<module\-version>/build/.
 If a patch should only be applied conditionally, the
@@ -846,6 +849,13 @@ of your source. If the script exits with a non\-zero value, the
 install will be aborted. This is typically used to perform a custom
 version comparison.
 .PP
+All scripts (POST_ADD, PRE_BUILD, POST_BUILD, PRE_INSTALL, POST_INSTALL, POST_REMOVE)
+can also be placed in
+.I /etc/dkms/<module>/
+instead of the module source directory. Scripts in
+.I /etc/dkms/<module>/
+take precedence over scripts in the source directory.
+.PP
 .SH DKMS.CONF VARIABLES
 Within your DKMS configuration file, you can use certain variables which will be replaced at run\-time with their values.
 .TP
@@ -881,6 +891,16 @@ file is read, dkms will look for and read the following files in order:
 You can use these files to override settings in the module-provided
 .I dkms.conf
 file.
+.PP
+Additionally, patches and scripts can be placed in
+.I /etc/dkms/<module>/
+to override those provided by the module source tree:
+.PP
+.I /etc/dkms/<module>/patches/
+\(em patch files (override same-named patches from the source directory)
+.br
+.I /etc/dkms/<module>/
+\(em scripts referenced by PRE_BUILD, POST_BUILD, etc. (override same-named scripts from the source directory)
 .SH FRAMEWORK.CONF MAIN CONFIGURATION
 The
 .B /etc/dkms/framework.conf

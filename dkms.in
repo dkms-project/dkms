@@ -1160,12 +1160,19 @@ run_build_script() {
             script_type='source'
             ;;
     esac
-    run="$dkms_tree/$module/$module_version/$script_type/$2"
+    local run_dir
+    run_dir="$dkms_tree/$module/$module_version/$script_type"
+    run="$run_dir/$2"
+    # Check /etc/dkms/<module>/ for an override script
+    if [[ -x "/etc/dkms/$module/${2%% *}" ]]; then
+        run_dir="/etc/dkms/$module"
+        run="/etc/dkms/$module/$2"
+    fi
     if [[ -x ${run%% *} ]]; then
         if [[ $3 ]]; then
             local res
             res=0
-            invoke_command "cd $dkms_tree/$module/$module_version/$script_type/ && $run" "Running the $1 script" "$3" background || res=$?
+            invoke_command "cd $run_dir/ && $run" "Running the $1 script" "$3" background || res=$?
             if [[ $res != 0 ]]; then
                 echo "Consult $3 for more information."
                 exit "$res"
@@ -1173,7 +1180,7 @@ run_build_script() {
         else
         echo "Running the $1 script:"
         (
-            cd "$dkms_tree/$module/$module_version/$script_type/" || exit 15
+            cd "$run_dir/" || exit 15
             exec $run
         )
         fi
@@ -1563,6 +1570,12 @@ do_build()
     # Set up temporary build directory for build
     rm -rf "${build_dir:?}"
     CP -a "$source_dir/" "$build_dir"
+
+    # Overlay patches from /etc/dkms/<module>/patches/ if present
+    if [[ -d /etc/dkms/$module/patches ]]; then
+        mkdir -p "$build_dir/patches"
+        CP -a "/etc/dkms/$module/patches/." "$build_dir/patches/"
+    fi
 
     echo "DKMS (@RELEASE_STRING@) make.log for $module/$module_version for kernel $kernelver ($arch)" >> "$build_log"
     date >> "$build_log"
