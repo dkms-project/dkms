@@ -2331,7 +2331,7 @@ remove_module()
             lock_tail=$(tail -n 1 "$lock_file" 2>/dev/null)
             [[ $lock_head = $module-$module_version && $time_stamp && $lock_tail = "$time_stamp" ]] || continue
             rm -f "${lock_file:?}"
-            die 0 "Remove cancelled because --rpm_safe_upgrade scenario detected."
+            diewarn 0 "Remove cancelled because --rpm_safe_upgrade scenario detected."
         done
     fi
 
