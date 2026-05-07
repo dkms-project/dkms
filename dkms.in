@@ -3142,14 +3142,13 @@ autoinstall() {
             unresolved_modules[${#unresolved_modules[@]}]="$mv"
         else
             echo "$m/$v autoinstall deferred: BUILD_DEPENDS not registered with DKMS:$deferred_deps."
-            echo "  These may be provided externally or by a package not yet configured;"
-            echo "  autoinstall will retry on the next trigger."
             deferred_modules[${#deferred_modules[@]}]="$mv"
         fi
     done
 
     if (( ${#deferred_modules[@]} > 0 )); then
-        warn "Autoinstall on ${kernelver[0]} deferred module(s) ${deferred_modules[*]} due to BUILD_DEPENDS not yet registered with DKMS."
+        echo "Autoinstall on ${kernelver[0]} deferred module(s) ${deferred_modules[*]} due to BUILD_DEPENDS not yet registered with DKMS."
+        echo "These may be provided externally or by a package not yet configured; autoinstall will retry on the next trigger."
     fi
 
     if (( ${#failed_modules[@]} > 0 || ${#unresolved_modules[@]} > 0 )); then
