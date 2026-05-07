@@ -1836,9 +1836,8 @@ EOF
 echo "Running dkms autoinstall (expected deferred, BUILD_DEPENDS not in DKMS)"
 run_with_expected_output dkms autoinstall -k "${KERNEL_VER}" << EOF
 dkms_dependencies_test/1.0 autoinstall deferred: BUILD_DEPENDS not registered with DKMS: dkms_test.
-  These may be provided externally or by a package not yet configured;
-  autoinstall will retry on the next trigger.
-Warning: Autoinstall on ${KERNEL_VER} deferred module(s) dkms_dependencies_test/1.0 due to BUILD_DEPENDS not yet registered with DKMS.
+Autoinstall on ${KERNEL_VER} deferred module(s) dkms_dependencies_test/1.0 due to BUILD_DEPENDS not yet registered with DKMS.
+These may be provided externally or by a package not yet configured; autoinstall will retry on the next trigger.
 EOF
 run_status_with_expected_output 'dkms_test' << EOF
 EOF
@@ -2288,9 +2287,8 @@ EOF
 echo "Running dkms autoinstall (expected deferred, BUILD_DEPENDS not in DKMS)"
 run_with_expected_output dkms autoinstall -k "${KERNEL_VER}" << EOF
 dkms_dependencies_rebuild_test/1.0 autoinstall deferred: BUILD_DEPENDS not registered with DKMS: dkms_test.
-  These may be provided externally or by a package not yet configured;
-  autoinstall will retry on the next trigger.
-Warning: Autoinstall on ${KERNEL_VER} deferred module(s) dkms_dependencies_rebuild_test/1.0 due to BUILD_DEPENDS not yet registered with DKMS.
+Autoinstall on ${KERNEL_VER} deferred module(s) dkms_dependencies_rebuild_test/1.0 due to BUILD_DEPENDS not yet registered with DKMS.
+These may be provided externally or by a package not yet configured; autoinstall will retry on the next trigger.
 EOF
 run_status_with_expected_output 'dkms_test' << EOF
 EOF
