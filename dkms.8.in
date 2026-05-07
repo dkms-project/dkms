@@ -743,6 +743,34 @@ of another module that is managed by dkms. Do not specify a version or
 architecture in the dependency. A missing dependency requires the parameter
 .OP --force
 to still attempt the build of the module.
+
+When invoked through
+.B autoinstall ,
+unresolved dependencies are handled differently depending on whether they are
+known to dkms. A dependency that is itself a dkms-managed module but failed
+to install (for example because of a circular dependency or a build error)
+is treated as a hard failure and causes
+.B autoinstall
+to exit non-zero. A dependency that is
+.I not
+registered with dkms at the time
+.B autoinstall
+runs is treated as deferred: a warning is emitted and the dependent module is left in the
+.B added
+state, but
+.B autoinstall
+exits successfully. This avoids spurious failures during multi-package
+installs where the dependency's source package has not yet had its postinst
+run, or where the dependency is supplied by something outside dkms. The
+dependent module will be picked up by the next
+.B autoinstall
+trigger once the dependency becomes available.
+
+Example: Ubuntu system with module A and module B depending on A. During an update, both
+the kernel and module A get updated, so
+.B autoinstall
+runs as a kernel post hook. This means the whole dependency logic fails because module A is not
+yet installed to satisfy module B.
 .TP
 .B BUILD_DEPENDS_REBUILD=
 If this directive is set to
