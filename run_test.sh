@@ -1833,12 +1833,12 @@ run_status_with_expected_output 'dkms_dependencies_test' << EOF
 dkms_dependencies_test/1.0: added
 EOF
 
-echo "Running dkms autoinstall (expected error)"
-run_with_expected_error 11 dkms autoinstall -k "${KERNEL_VER}" << EOF
-dkms_dependencies_test/1.0 autoinstall failed due to missing dependencies: dkms_test.
-
-Error! One or more modules failed to install during autoinstall.
-Refer to previous errors for more information.
+echo "Running dkms autoinstall (expected deferred, BUILD_DEPENDS not in DKMS)"
+run_with_expected_output dkms autoinstall -k "${KERNEL_VER}" << EOF
+dkms_dependencies_test/1.0 autoinstall deferred: BUILD_DEPENDS not registered with DKMS: dkms_test.
+  These may be provided externally or by a package not yet configured;
+  autoinstall will retry on the next trigger.
+Warning: Autoinstall on ${KERNEL_VER} deferred module(s) dkms_dependencies_test/1.0 due to BUILD_DEPENDS not yet registered with DKMS.
 EOF
 run_status_with_expected_output 'dkms_test' << EOF
 EOF
@@ -2285,12 +2285,12 @@ run_status_with_expected_output 'dkms_dependencies_rebuild_test' << EOF
 dkms_dependencies_rebuild_test/1.0: added
 EOF
 
-echo "Running dkms autoinstall (expected error)"
-run_with_expected_error 11 dkms autoinstall -k "${KERNEL_VER}" << EOF
-dkms_dependencies_rebuild_test/1.0 autoinstall failed due to missing dependencies: dkms_test.
-
-Error! One or more modules failed to install during autoinstall.
-Refer to previous errors for more information.
+echo "Running dkms autoinstall (expected deferred, BUILD_DEPENDS not in DKMS)"
+run_with_expected_output dkms autoinstall -k "${KERNEL_VER}" << EOF
+dkms_dependencies_rebuild_test/1.0 autoinstall deferred: BUILD_DEPENDS not registered with DKMS: dkms_test.
+  These may be provided externally or by a package not yet configured;
+  autoinstall will retry on the next trigger.
+Warning: Autoinstall on ${KERNEL_VER} deferred module(s) dkms_dependencies_rebuild_test/1.0 due to BUILD_DEPENDS not yet registered with DKMS.
 EOF
 run_status_with_expected_output 'dkms_test' << EOF
 EOF

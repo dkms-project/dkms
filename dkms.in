@@ -2994,6 +2994,8 @@ autoinstall() {
     local -a installed_modules
     local -a skipped_modules
     local -a failed_modules
+    local -a unresolved_modules
+    local -a deferred_modules
     local -A build_depends
     local -A latest
 
@@ -3104,12 +3106,53 @@ autoinstall() {
         echo "Autoinstall on ${kernelver[0]} failed for module(s) ${failed_modules[*]}."
     fi
 
+    # Classify modules with unresolved BUILD_DEPENDS:
+    #
+    #   "real" missing dependency:
+    #
+    #   The dependency is a DKMS-managed module (in known_modules) that we tried but could
+    #   not install (e.g. circular dependency, build failure of the dependency).
+    #
+    #   "deferred" missing dependency:
+    #
+    #   The dependency is not registered with DKMS at all. This commonly happens during
+    #   multi-package installs where the dependency's source package has not yet been configured
+    #   by dpkg/rpm, so its postinst hasn't run `dkms add` yet. The dependency may also be
+    #   supplied by something outside DKMS entirely. Either way, the current autoinstall run
+    #   cannot make progress on it, but a later trigger (the dependency package's own postinst,
+    #   or a re-run of this hook) will. Don't fail the whole transaction in that case.
+    local d is_known real_missing_deps deferred_deps
     for mv in "${to_install[@]}"; do
         IFS=/ read -r m v <<< "$mv"
-        echo "$m/$v autoinstall failed due to missing dependencies: ${build_depends[$m]}."
+        real_missing_deps=
+        deferred_deps=
+        for d in ${build_depends[$m]}; do
+            is_known=
+            for k in "${known_modules[@]}"; do
+                [[ "$d" = "$k" ]] && { is_known=1; break; }
+            done
+            if [[ $is_known ]]; then
+                real_missing_deps="$real_missing_deps $d"
+            else
+                deferred_deps="$deferred_deps $d"
+            fi
+        done
+        if [[ $real_missing_deps ]]; then
+            echo "$m/$v autoinstall failed due to missing dependencies:$real_missing_deps."
+            unresolved_modules[${#unresolved_modules[@]}]="$mv"
+        else
+            echo "$m/$v autoinstall deferred: BUILD_DEPENDS not registered with DKMS:$deferred_deps."
+            echo "  These may be provided externally or by a package not yet configured;"
+            echo "  autoinstall will retry on the next trigger."
+            deferred_modules[${#deferred_modules[@]}]="$mv"
+        fi
     done
 
-    if (( ${#failed_modules[@]} > 0 || ${#to_install[@]} > 0 )); then
+    if (( ${#deferred_modules[@]} > 0 )); then
+        warn "Autoinstall on ${kernelver[0]} deferred module(s) ${deferred_modules[*]} due to BUILD_DEPENDS not yet registered with DKMS."
+    fi
+
+    if (( ${#failed_modules[@]} > 0 || ${#unresolved_modules[@]} > 0 )); then
         die 11 "One or more modules failed to install during autoinstall." \
             "Refer to previous errors for more information."
     fi
