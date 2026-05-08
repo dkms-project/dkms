@@ -37,6 +37,7 @@ TEST_MODULES=(
     "dkms_noautoinstall_test"
     "dkms_failing_test"
     "dkms_failing_dependencies_test"
+    "dkms_dependencies_on_noautoinstall_test"
     "dkms_multiver_test"
     "dkms_nover_test"
     "dkms_emptyver_test"
@@ -3843,6 +3844,54 @@ Deleting module dkms_failing_dependencies_test/1.0 completely from the DKMS tree
 EOF
 
 remove_module_source_tree /usr/src/dkms_failing_dependencies_test-1.0
+
+# Negative test: BUILD_DEPENDS points to a module that is registered with DKMS
+# but won't be installed automatically (AUTOINSTALL=""). Because the dep IS
+# known to DKMS, this is a *real* missing-dependency case (not a deferred one)
+# and autoinstall must fail with code 11.
+echo 'Adding noautoinstall test module (will be the unsatisfiable BUILD_DEPENDS)'
+run_with_expected_output dkms add test/dkms_noautoinstall_test-1.0 << EOF
+Creating symlink /var/lib/dkms/dkms_noautoinstall_test/1.0/source -> /usr/src/dkms_noautoinstall_test-1.0
+EOF
+check_module_source_tree_created /usr/src/dkms_noautoinstall_test-1.0
+
+echo 'Adding test module with BUILD_DEPENDS on the noautoinstall module'
+run_with_expected_output dkms add test/dkms_dependencies_on_noautoinstall_test-1.0 << EOF
+Creating symlink /var/lib/dkms/dkms_dependencies_on_noautoinstall_test/1.0/source -> /usr/src/dkms_dependencies_on_noautoinstall_test-1.0
+EOF
+check_module_source_tree_created /usr/src/dkms_dependencies_on_noautoinstall_test-1.0
+
+echo 'Running autoinstall with BUILD_DEPENDS on a known-but-not-autoinstalled module (expected error)'
+run_with_expected_error 11 dkms autoinstall -k "${KERNEL_VER}" << EOF
+dkms_dependencies_on_noautoinstall_test/1.0 autoinstall failed due to missing dependencies: dkms_noautoinstall_test.
+
+Error! One or more modules failed to install during autoinstall.
+Refer to previous errors for more information.
+EOF
+run_status_with_expected_output 'dkms_noautoinstall_test' << EOF
+dkms_noautoinstall_test/1.0: added
+EOF
+run_status_with_expected_output 'dkms_dependencies_on_noautoinstall_test' << EOF
+dkms_dependencies_on_noautoinstall_test/1.0: added
+EOF
+
+echo 'Removing the dependent test module'
+run_with_expected_output dkms remove -k "${KERNEL_VER}" -m dkms_dependencies_on_noautoinstall_test -v 1.0 << EOF
+Module dkms_dependencies_on_noautoinstall_test/1.0 is not installed for kernel ${KERNEL_VER} (${KERNEL_ARCH}). Skipping...
+Module dkms_dependencies_on_noautoinstall_test/1.0 is not built for kernel ${KERNEL_VER} (${KERNEL_ARCH}). Skipping...
+
+Deleting module dkms_dependencies_on_noautoinstall_test/1.0 completely from the DKMS tree.
+EOF
+remove_module_source_tree /usr/src/dkms_dependencies_on_noautoinstall_test-1.0
+
+echo 'Removing the noautoinstall test module'
+run_with_expected_output dkms remove -k "${KERNEL_VER}" -m dkms_noautoinstall_test -v 1.0 << EOF
+Module dkms_noautoinstall_test/1.0 is not installed for kernel ${KERNEL_VER} (${KERNEL_ARCH}). Skipping...
+Module dkms_noautoinstall_test/1.0 is not built for kernel ${KERNEL_VER} (${KERNEL_ARCH}). Skipping...
+
+Deleting module dkms_noautoinstall_test/1.0 completely from the DKMS tree.
+EOF
+remove_module_source_tree /usr/src/dkms_noautoinstall_test-1.0
 
 echo 'Checking that the environment is clean again'
 check_no_dkms_test
