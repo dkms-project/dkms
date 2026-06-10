@@ -60,7 +60,10 @@ jobs:
       if: matrix.distro.name == 'almalinux' || matrix.distro.name == 'centos' || matrix.distro.name == 'fedora'
       # Relax crypto policies to allow RSA signatures
       run: |
-        dnf install -y gawk diffutils elfutils-libelf gcc kernel kernel-devel make openssl patch crypto-policies-scripts
+        if [ "${{ matrix.distro.tag }}" == "8" ]; then
+          dnf config-manager --set-enabled powertools
+        fi
+        dnf install -y gawk diffutils dwarves elfutils-libelf gcc kernel kernel-devel make openssl patch crypto-policies-scripts
         update-crypto-policies --set LEGACY
         make install-redhat
 
