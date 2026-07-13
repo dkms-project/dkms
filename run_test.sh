@@ -600,7 +600,7 @@ echo 'Building the test module for a kernel without headers installed (expected 
 run_with_expected_error 21 dkms build -k "${KERNEL_VER}-noheaders" -m dkms_test -v 1.0 << EOF
 
 Error! Your kernel headers for kernel ${KERNEL_VER}-noheaders cannot be found at /lib/modules/${KERNEL_VER}-noheaders/build or /lib/modules/${KERNEL_VER}-noheaders/source.
-Please install the linux-headers-${KERNEL_VER}-noheaders package or use the --kernelsourcedir option to tell DKMS where it's located.
+Please install your distribution's kernel headers package matching ${KERNEL_VER}-noheaders, or use the --kernelsourcedir option to tell DKMS where it's located.
 EOF
 
 echo 'Building the test module for more than one kernel version (same version twice for this test)'
@@ -1191,7 +1191,7 @@ echo ' Running dkms autoinstall (expected error)'
 run_with_expected_error 21 dkms autoinstall -k "${KERNEL_VER}-noheaders" << EOF
 
 Error! Your kernel headers for kernel ${KERNEL_VER}-noheaders cannot be found at /lib/modules/${KERNEL_VER}-noheaders/build or /lib/modules/${KERNEL_VER}-noheaders/source.
-Please install the linux-headers-${KERNEL_VER}-noheaders package or use the --kernelsourcedir option to tell DKMS where it's located.
+Please install your distribution's kernel headers package matching ${KERNEL_VER}-noheaders, or use the --kernelsourcedir option to tell DKMS where it's located.
 EOF
 
 if [[ -x /usr/lib/dkms/dkms_autoinstaller ]]; then
@@ -1205,7 +1205,7 @@ echo ' Running dkms kernel_postinst (expected error)'
 run_with_expected_error 21 dkms kernel_postinst -k "${KERNEL_VER}-noheaders" << EOF
 
 Error! Your kernel headers for kernel ${KERNEL_VER}-noheaders cannot be found at /lib/modules/${KERNEL_VER}-noheaders/build or /lib/modules/${KERNEL_VER}-noheaders/source.
-Please install the linux-headers-${KERNEL_VER}-noheaders package or use the --kernelsourcedir option to tell DKMS where it's located.
+Please install your distribution's kernel headers package matching ${KERNEL_VER}-noheaders, or use the --kernelsourcedir option to tell DKMS where it's located.
 EOF
 
 echo ' Running dkms kernel_prerm'
