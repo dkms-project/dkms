@@ -17,6 +17,8 @@ jobs:
           - {name: "almalinux", tag: "10"}
           - {name: "almalinux", tag: "9"}
           - {name: "almalinux", tag: "8"}
+          - {name: "alpine", tag: "3.24", variant: "-lts"}
+          - {name: "alpine", tag: "3.24", variant: "-virt"}
           - {name: "alpine", tag: "3.23", variant: "-lts"}
           - {name: "alpine", tag: "3.23", variant: "-virt"}
           - {name: "alpine", tag: "3.22", variant: "-lts"}
@@ -32,7 +34,6 @@ jobs:
           - {name: "debian", tag: "12"}
           - {name: "fedora", tag: "44", url: "registry.fedoraproject.org/"}
           - {name: "fedora", tag: "43", url: "registry.fedoraproject.org/"}
-          - {name: "fedora", tag: "42", url: "registry.fedoraproject.org/"}
           - {name: "gentoo/stage3", tag: "latest"}
           - {name: "opensuse/tumbleweed", tag: "latest", variant: "-default", url: "registry.opensuse.org/"}
           - {name: "opensuse/leap", tag: "15.6", variant: "-default", url: "registry.opensuse.org/"}
@@ -41,7 +42,6 @@ jobs:
           - {name: "oraclelinux", tag: "9", uek: "ol9_UEKR8", gcc: "gcc-toolset-14"}
           - {name: "oraclelinux", tag: "8", uek: "ol8_UEKR7", gcc: "gcc-toolset-11"}
           - {name: "ubuntu", tag: "26.04"}
-          - {name: "ubuntu", tag: "25.10"}
           - {name: "ubuntu", tag: "24.04"}
           - {name: "ubuntu", tag: "22.04"}
     runs-on: ubuntu-latest
