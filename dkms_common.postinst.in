@@ -157,10 +157,19 @@ fi
 
 dkms_conf="/var/lib/dkms/$NAME/$VERSION/source/dkms.conf"
 autoinstall=$(bash -c 'AUTOINSTALL=; . "'"$dkms_conf"'" >/dev/null 2>&1; echo $AUTOINSTALL')
-if [ -z "$autoinstall" ]; then
-    echo "Not building the $NAME module which does not have AUTOINSTALL enabled."
-    exit 0
-fi
+# Same check as in dkms.conf: only "yes" enables autoinstallation
+case "$autoinstall" in
+    [Yy][Ee][Ss])
+        ;;
+    ""|[Nn][Oo])
+        echo "Not building the $NAME module which does not have AUTOINSTALL enabled."
+        exit 0
+        ;;
+    *)
+        echo "dkms.conf: Error! Unsupported AUTOINSTALL value '$autoinstall'" >&2
+        exit 1
+        ;;
+esac
 
 dkms_conf="/var/lib/dkms/$NAME/$VERSION/source/dkms.conf"
 autoinstall=$(bash -c 'AUTOINSTALL=; . "'"$dkms_conf"'" >/dev/null 2>&1; echo $AUTOINSTALL')
