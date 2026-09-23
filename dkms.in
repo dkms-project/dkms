@@ -1905,6 +1905,11 @@ do_install()
         dest_name=${toinstall##*/}
         echo "Installing $dest_dir/$dest_name"
         mkdir -p "$dest_dir"
+        # Remove any stale copy of this module left behind under a different
+        # compression suffix (e.g. a previously installed version that used
+        # a different compression), so we don't end up with both a
+        # compressed and an uncompressed copy in $dest_dir.
+        rm -f "${dest_dir:?}/$m$module_uncompressed_suffix"*
         CP -f $symlink "$toinstall" "$dest_dir/$dest_name" || die 6 "Copying '$toinstall' failed"
         any_module_installed=1
 
