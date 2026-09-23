@@ -152,6 +152,8 @@ If the module is already installed, it will not be reinstalled again
 by default, and the
 .B --force
 option should be used to override this.
+If a different version of the module is installed for that kernel, it is
+uninstalled first, so that none of its kernel modules are left behind.
 If you pass a .rpm file, dkms will try to install that file with
 .BR "rpm -Uvh" ,
 and it will perform an

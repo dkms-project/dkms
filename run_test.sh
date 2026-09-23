@@ -39,6 +39,7 @@ TEST_MODULES=(
     "dkms_failing_dependencies_test"
     "dkms_dependencies_on_noautoinstall_test"
     "dkms_multiver_test"
+    "dkms_rename_test"
     "dkms_nover_test"
     "dkms_emptyver_test"
     "dkms_nover_update_test"
@@ -301,6 +302,22 @@ check_module_source_tree_created() {
     fi
     if ! [[ -f "$1/dkms.conf" ]] ; then
         echo >&2 "Error: '$1/dkms.conf' was not found"
+        exit 1
+    fi
+}
+
+check_installed_module_present() {
+    local path="/lib/modules/${KERNEL_VER}/${expected_dest_loc}/$1.ko${mod_compression_ext}"
+    if ! [[ -e "${path}" ]] ; then
+        echo >&2 "Error: module not installed in ${path}"
+        exit 1
+    fi
+}
+
+check_installed_module_absent() {
+    local path="/lib/modules/${KERNEL_VER}/${expected_dest_loc}/$1.ko${mod_compression_ext}"
+    if [[ -e "${path}" ]] ; then
+        echo >&2 "Error: module not removed in ${path}"
         exit 1
     fi
 }
@@ -3471,6 +3488,9 @@ dkms_multiver_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
 dkms_multiver_test/2.0, ${KERNEL_VER}, ${KERNEL_ARCH}: built
 EOF
 run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_multiver_test -v 2.0 << EOF
+Module dkms_multiver_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_multiver_test.ko${mod_compression_ext}
 Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_multiver_test.ko${mod_compression_ext}
 Running depmod... done.
 EOF
@@ -3550,6 +3570,95 @@ run_status_with_expected_output 'dkms_multiver_test' << EOF
 EOF
 
 remove_module_source_tree /usr/src/dkms_multiver_test-1.0 /usr/src/dkms_multiver_test-2.0
+
+echo 'Checking that the environment is clean again'
+check_no_dkms_test
+
+############################################################################
+echo '*** Testing dkms on a module whose kernel module is renamed between versions'
+############################################################################
+
+echo 'Adding the rename test modules by directory'
+run_with_expected_output dkms add test/dkms_rename_test/1.0 << EOF
+Creating symlink /var/lib/dkms/dkms_rename_test/1.0/source -> /usr/src/dkms_rename_test-1.0
+EOF
+check_module_source_tree_created /usr/src/dkms_rename_test-1.0
+run_with_expected_output dkms add test/dkms_rename_test/2.0 << EOF
+Creating symlink /var/lib/dkms/dkms_rename_test/2.0/source -> /usr/src/dkms_rename_test-2.0
+EOF
+check_module_source_tree_created /usr/src/dkms_rename_test-2.0
+run_status_with_expected_output 'dkms_rename_test' << EOF
+dkms_rename_test/1.0: added
+dkms_rename_test/2.0: added
+EOF
+
+echo 'Installing the rename test module 1.0'
+set_signing_message "dkms_rename_test" "1.0" "dkms_rename_test_v1"
+run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_rename_test -v 1.0 << EOF
+${SIGNING_PROLOGUE}
+Building module(s)... done.${SIGNING_MESSAGE}
+Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_rename_test_v1.ko${mod_compression_ext}
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_rename_test' << EOF
+dkms_rename_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
+dkms_rename_test/2.0: added
+EOF
+check_installed_module_present dkms_rename_test_v1
+
+echo 'Installing the rename test module 2.0, the 1.0 module must be uninstalled'
+set_signing_message "dkms_rename_test" "2.0" "dkms_rename_test_v2"
+run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_rename_test -v 2.0 << EOF
+${SIGNING_PROLOGUE}
+Building module(s)... done.${SIGNING_MESSAGE}
+Module dkms_rename_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_rename_test_v1.ko${mod_compression_ext}
+Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_rename_test_v2.ko${mod_compression_ext}
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_rename_test' << EOF
+dkms_rename_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: built
+dkms_rename_test/2.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
+EOF
+check_installed_module_absent dkms_rename_test_v1
+check_installed_module_present dkms_rename_test_v2
+
+echo 'Installing the rename test module 1.0 again, the 2.0 module must be uninstalled'
+run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_rename_test -v 1.0 << EOF
+Module dkms_rename_test/2.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_rename_test_v2.ko${mod_compression_ext}
+Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_rename_test_v1.ko${mod_compression_ext}
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_rename_test' << EOF
+dkms_rename_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
+dkms_rename_test/2.0, ${KERNEL_VER}, ${KERNEL_ARCH}: built
+EOF
+check_installed_module_present dkms_rename_test_v1
+check_installed_module_absent dkms_rename_test_v2
+
+echo 'Removing the rename test modules'
+run_with_expected_output dkms remove -k "${KERNEL_VER}" -m dkms_rename_test -v 1.0 << EOF
+Module dkms_rename_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_rename_test_v1.ko${mod_compression_ext}
+Running depmod... done.
+
+Deleting module dkms_rename_test/1.0 completely from the DKMS tree.
+EOF
+run_with_expected_output dkms remove -k "${KERNEL_VER}" -m dkms_rename_test -v 2.0 << EOF
+Module dkms_rename_test/2.0 is not installed for kernel ${KERNEL_VER} (${KERNEL_ARCH}). Skipping...
+
+Deleting module dkms_rename_test/2.0 completely from the DKMS tree.
+EOF
+run_status_with_expected_output 'dkms_rename_test' << EOF
+EOF
+check_installed_module_absent dkms_rename_test_v1
+check_installed_module_absent dkms_rename_test_v2
+
+remove_module_source_tree /usr/src/dkms_rename_test-1.0 /usr/src/dkms_rename_test-2.0
 
 echo 'Checking that the environment is clean again'
 check_no_dkms_test
@@ -3710,6 +3819,9 @@ set_signing_message "dkms_nover_update_test" "2.0"
 run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_nover_update_test -v 2.0 << EOF
 ${SIGNING_PROLOGUE}
 Building module(s)... done.${SIGNING_MESSAGE}
+Module dkms_nover_update_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_nover_update_test.ko${mod_compression_ext}
 Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_nover_update_test.ko${mod_compression_ext}
 Running depmod... done.
 EOF

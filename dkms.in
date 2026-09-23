@@ -1776,6 +1776,13 @@ do_install()
     local -r lib_tree="$install_tree/$kernelver"
     local -r original_module_backup_dir="$dkms_tree/$module/original_module/$kernelver/$arch"
     local -r active_link="$dkms_tree/$module/kernel-$kernelver-$arch"
+    # The version currently active for this kernel/arch, if any. It gets
+    # uninstalled once the new version has passed the sanity checks.
+    local old_active_version
+    if [[ -L $active_link ]]; then
+        old_active_version=$(readlink "$active_link")
+        old_active_version=${old_active_version%%/*}
+    fi
     local count
     local index
     local symlink
@@ -1828,14 +1835,14 @@ do_install()
     # nothing installed.
     [[ $rpm_safe_upgrade ]] && force="true"
 
-    # Save the original_module if one exists, none have been saved before, and this is the first module for this kernel
-    local any_module_installed
-
     if ! run_build_script pre_install "$pre_install" && ! [[ $force ]]; then
         die 101 "pre_install failed, aborting install." \
             "You may override by specifying --force."
     fi
 
+    # Decide which modules to install before touching the install tree: the
+    # version sanity check has to run against what is currently there.
+    local -a modules_to_install=()
     for ((count=0; count < num_modules; count++)); do
         # Skip modules that are excluded due to BUILD_EXCLUSIVE restrictions
         if ! check_build_exclusive_for_module "$count" "$kernelver" "$arch"; then
@@ -1845,6 +1852,24 @@ do_install()
         # Check this version against what is already in the kernel
         check_version_sanity "$kernelver" "$arch" "$obsolete_by" "${dest_module_name[$count]}" || continue
 
+        modules_to_install+=("$count")
+    done
+
+    if ((num_modules > 0)) && ((${#modules_to_install[@]} == 0)); then
+        die 6 "Installation aborted."
+    fi
+
+    # Uninstall the version currently active for this kernel/arch, so none of
+    # its modules linger in the install tree: they may have different names
+    # or a different compression suffix than the ones installed below.
+    # depmod runs once, after the new modules are in place.
+    if [[ $old_active_version ]]; then
+        (module_version="$old_active_version" delayed_depmod=1 do_uninstall "$kernelver" "$arch") || \
+            die 6 "Failed to uninstall $module/$old_active_version for kernel $kernelver ($arch)."
+    fi
+
+    # Save the original_module if one exists, none have been saved before, and this is the first module for this kernel
+    for count in "${modules_to_install[@]}"; do
         local m
         local installed_modules
         local module_count
@@ -1905,19 +1930,8 @@ do_install()
         dest_name=${toinstall##*/}
         echo "Installing $dest_dir/$dest_name"
         mkdir -p "$dest_dir"
-        # Remove any stale copy of this module left behind under a different
-        # compression suffix (e.g. a previously installed version that used
-        # a different compression), so we don't end up with both a
-        # compressed and an uncompressed copy in $dest_dir.
-        rm -f "${dest_dir:?}/$m$module_uncompressed_suffix"*
         CP -f $symlink "$toinstall" "$dest_dir/$dest_name" || die 6 "Copying '$toinstall' failed"
-        any_module_installed=1
-
     done
-
-    if ((num_modules > 0)) && [[ ! "${any_module_installed}" ]]; then
-        die 6 "Installation aborted."
-    fi
 
     # Create the kernel-<kernelver> symlink to designate this version as active
     rm -f "$active_link"
@@ -1940,6 +1954,9 @@ do_install()
             "Install Failed (depmod problems). Module rolled back to built state."
         exit 6
     }
+    # depmod just ran for this kernel; drop any pending marker left by the
+    # uninstall of the previous version.
+    rm -f "${dkms_tree:?}/depmod-pending-$kernelver-$arch"
 
     if [[ $modprobe_on_install ]] && [[ $kernelver = "$(uname -r)" ]]; then
         # Make the newly installed modules available immediately
