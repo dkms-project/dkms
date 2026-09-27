@@ -4418,7 +4418,8 @@ echo 'Checking broken status'
 run_with_expected_output dkms status dkms_test/1.0 << EOF
 dkms_test/1.0: broken
 
-Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it.
+Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4434,7 +4435,8 @@ echo 'Building broken test module (expected error)'
 run_with_expected_error 4 dkms build dkms_test/1.0 << EOF
 
 Error! dkms_test/1.0 is broken!
-Missing the source directory or the symbolic link pointing to it.
+Missing the source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4442,7 +4444,8 @@ echo 'Installing broken test module (expected error)'
 run_with_expected_error 4 dkms install dkms_test/1.0 << EOF
 
 Error! dkms_test/1.0 is broken!
-Missing the source directory or the symbolic link pointing to it.
+Missing the source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4450,7 +4453,8 @@ echo 'Unbuild broken test module (expected error)'
 run_with_expected_error 4 dkms unbuild dkms_test/1.0 << EOF
 
 Error! dkms_test/1.0 is broken!
-Missing the source directory or the symbolic link pointing to it.
+Missing the source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4458,7 +4462,8 @@ echo 'Uninstall broken test module (expected error)'
 run_with_expected_error 4 dkms uninstall dkms_test/1.0 << EOF
 
 Error! dkms_test/1.0 is broken!
-Missing the source directory or the symbolic link pointing to it.
+Missing the source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4473,7 +4478,8 @@ run_with_expected_output dkms status << EOF
 dkms_multiver_test/1.0: added
 dkms_test/1.0: broken
 
-Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it.
+Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4481,7 +4487,8 @@ echo 'Remove broken test module (expected error)'
 run_with_expected_error 4 dkms remove dkms_test/1.0 << EOF
 
 Error! dkms_test/1.0 is broken!
-Missing the source directory or the symbolic link pointing to it.
+Missing the source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4497,7 +4504,8 @@ run_with_expected_output dkms status << EOF
 dkms_multiver_test/1.0: added
 dkms_test/1.0: broken
 
-Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it.
+Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
 EOF
 
@@ -4540,7 +4548,8 @@ EOF
 echo 'Running dkms autoinstall'
 run_with_expected_output dkms autoinstall -k "${KERNEL_VER}" << EOF
 
-Error! dkms_multiver_test/1.0 is broken! Missing the source directory or the symbolic link pointing to it.
+Error! dkms_multiver_test/1.0 is broken! Missing the source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_multiver_test/1.0/source
 Manual intervention is required!
 Autoinstall of module dkms_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH})
 Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_test.ko${mod_compression_ext}
@@ -4551,7 +4560,8 @@ EOF
 run_with_expected_output dkms status << EOF
 dkms_multiver_test/1.0: broken
 
-Error! dkms_multiver_test/1.0: Missing the module source directory or the symbolic link pointing to it.
+Error! dkms_multiver_test/1.0: Missing the module source directory or the symbolic link pointing to it:
+/var/lib/dkms/dkms_multiver_test/1.0/source
 Manual intervention is required!
 dkms_multiver_test/2.0, ${KERNEL_VER}, ${KERNEL_ARCH}: built
 dkms_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
