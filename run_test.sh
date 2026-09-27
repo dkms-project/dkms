@@ -403,7 +403,7 @@ case "${os_id}" in
         expected_dest_loc=updates
         mod_compression_ext=.zst
         ;;
-    arch)
+    arch | endeavouros)
         expected_dest_loc=updates/dkms
         ;;
     debian* | linuxmint)
