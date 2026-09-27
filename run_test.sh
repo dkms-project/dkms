@@ -4421,6 +4421,8 @@ dkms_test/1.0: broken
 Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Re-adding the test module'
@@ -4438,6 +4440,8 @@ Error! dkms_test/1.0 is broken!
 Missing the source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Installing broken test module (expected error)'
@@ -4447,6 +4451,8 @@ Error! dkms_test/1.0 is broken!
 Missing the source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Unbuild broken test module (expected error)'
@@ -4456,6 +4462,8 @@ Error! dkms_test/1.0 is broken!
 Missing the source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Uninstall broken test module (expected error)'
@@ -4465,6 +4473,8 @@ Error! dkms_test/1.0 is broken!
 Missing the source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Adding the multiver test module 1.0 by directory'
@@ -4481,6 +4491,8 @@ dkms_test/1.0: broken
 Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Remove broken test module (expected error)'
@@ -4490,6 +4502,8 @@ Error! dkms_test/1.0 is broken!
 Missing the source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Re-adding the test module'
@@ -4507,6 +4521,8 @@ dkms_test/1.0: broken
 Error! dkms_test/1.0: Missing the module source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 EOF
 
 echo 'Removing dkms_multiver_test'
@@ -4551,6 +4567,8 @@ run_with_expected_output dkms autoinstall -k "${KERNEL_VER}" << EOF
 Error! dkms_multiver_test/1.0 is broken! Missing the source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_multiver_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 Autoinstall of module dkms_test/1.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH})
 Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_test.ko${mod_compression_ext}
 Running depmod... done.
@@ -4563,6 +4581,8 @@ dkms_multiver_test/1.0: broken
 Error! dkms_multiver_test/1.0: Missing the module source directory or the symbolic link pointing to it:
 /var/lib/dkms/dkms_multiver_test/1.0/source
 Manual intervention is required!
+If this module version is no longer needed, you can remove the stale directory.
+Otherwise, reinstall the package that provides its source.
 dkms_multiver_test/2.0, ${KERNEL_VER}, ${KERNEL_ARCH}: built
 dkms_test/1.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed
 EOF

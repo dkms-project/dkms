@@ -2216,7 +2216,9 @@ module_is_broken_and_die() {
     is_module_broken "$module" "$module_version" && die 4 "$module/$module_version is broken!"\
         "Missing the source directory or the symbolic link pointing to it:"\
         "$dkms_tree/$module/$module_version/source"\
-        "Manual intervention is required!"
+        "Manual intervention is required!"\
+        "If this module version is no longer needed, you can remove the stale directory."\
+        "Otherwise, reinstall the package that provides its source."
 }
 
 module_is_added_or_die()
@@ -2564,7 +2566,9 @@ do_status() {
                 echo "$m/$v: $status"
                 error "$m/$v: Missing the module source directory or the symbolic link pointing to it:"\
                     "$dkms_tree/$m/$v/source"\
-                    "Manual intervention is required!"
+                    "Manual intervention is required!"\
+                    "If this module version is no longer needed, you can remove the stale directory."\
+                    "Otherwise, reinstall the package that provides its source."
                 ;;
             added)
                 echo "$m/$v: $status"
@@ -2859,7 +2863,9 @@ run_match()
             error "$template_module/$template_version is broken!"\
                 "Missing the source directory or the symbolic link pointing to it:"\
                 "$dkms_tree/$template_module/$template_version/source"\
-                "Manual intervention is required!"
+                "Manual intervention is required!"\
+                "If this module version is no longer needed, you can remove the stale directory."\
+                "Otherwise, reinstall the package that provides its source."
             continue
         fi
         maybe_build_module "$template_module" "$template_version" "$kernelver" "$arch"
@@ -3011,7 +3017,9 @@ autoinstall() {
         if [[ $status = broken ]]; then
             error "$m/$v is broken! Missing the source directory or the symbolic link pointing to it:"\
                 "$dkms_tree/$m/$v/source"\
-                "Manual intervention is required!"
+                "Manual intervention is required!"\
+                "If this module version is no longer needed, you can remove the stale directory."\
+                "Otherwise, reinstall the package that provides its source."
             continue
         fi
         if [[ ! ${latest[$m]} ]]; then
