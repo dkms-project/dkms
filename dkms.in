@@ -2214,7 +2214,8 @@ do_uninstall()
 
 module_is_broken_and_die() {
     is_module_broken "$module" "$module_version" && die 4 "$module/$module_version is broken!"\
-        "Missing the source directory or the symbolic link pointing to it."\
+        "Missing the source directory or the symbolic link pointing to it:"\
+        "$dkms_tree/$module/$module_version/source"\
         "Manual intervention is required!"
 }
 
@@ -2561,7 +2562,8 @@ do_status() {
         case $status in
             broken)
                 echo "$m/$v: $status"
-                error "$m/$v: Missing the module source directory or the symbolic link pointing to it."\
+                error "$m/$v: Missing the module source directory or the symbolic link pointing to it:"\
+                    "$dkms_tree/$m/$v/source"\
                     "Manual intervention is required!"
                 ;;
             added)
@@ -2855,7 +2857,8 @@ run_match()
         # Continue if the status is broken, as there is nothing we can do
         if is_module_broken "$template_module" "$template_version"; then
             error "$template_module/$template_version is broken!"\
-                "Missing the source directory or the symbolic link pointing to it."\
+                "Missing the source directory or the symbolic link pointing to it:"\
+                "$dkms_tree/$template_module/$template_version/source"\
                 "Manual intervention is required!"
             continue
         fi
@@ -3006,7 +3009,8 @@ autoinstall() {
         IFS='/' read -r m v k a <<< "$mvka"
         # If the module status is broken there is nothing that can be done
         if [[ $status = broken ]]; then
-            error "$m/$v is broken! Missing the source directory or the symbolic link pointing to it."\
+            error "$m/$v is broken! Missing the source directory or the symbolic link pointing to it:"\
+                "$dkms_tree/$m/$v/source"\
                 "Manual intervention is required!"
             continue
         fi
