@@ -4727,6 +4727,113 @@ check_no_dkms_test
 
 fi  # broken tests
 
+if [[ ! $only || $only = tarball ]]; then
+
+############################################################################
+echo '*** Testing mktarball/ldtarball with multiple kernels'
+############################################################################
+
+# Fake kernels are copies of the real build. ldtarball loads kernels in glob
+# order, which depends on the locale, so name the fake ones such that they sort
+# before the real one under any collation (a suffix of ${KERNEL_VER} does not).
+TARBALL_FAKE_KERNELS=("0.0.1-dkms-tarball" "0.0.2-dkms-tarball")
+TARBALL_KERNELS=("${TARBALL_FAKE_KERNELS[@]}" "${KERNEL_VER}")
+TARBALL_LOCATION="${tmpdir}/dkms_test-1.0.dkms.tar.gz"
+
+# Each kernel/arch directory gets a marker naming its kernel, so that
+# directories mixed up by mktarball/ldtarball can be detected.
+check_tarball_markers() {
+    local k
+    local marker
+    for k in "${TARBALL_KERNELS[@]}"; do
+        marker="/var/lib/dkms/dkms_test/1.0/${k}/${KERNEL_ARCH}/tarball_marker"
+        if ! [[ -f "${marker}" ]] ; then
+            echo >&2 "Error: ${marker} not found"
+            exit 1
+        fi
+        if [[ "$(cat "${marker}")" != "${k}" ]] ; then
+            echo >&2 "Error: ${marker} contains '$(cat "${marker}")' instead of '${k}'"
+            exit 1
+        fi
+    done
+}
+
+echo 'Adding and building the test module by directory'
+set_signing_message "dkms_test" "1.0"
+run_with_expected_output dkms build test/dkms_test-1.0 -k "${KERNEL_VER}" << EOF
+Creating symlink /var/lib/dkms/dkms_test/1.0/source -> /usr/src/dkms_test-1.0
+
+${SIGNING_PROLOGUE}
+Building module(s)... done.${SIGNING_MESSAGE}
+EOF
+
+echo ' Creating fake builds for kernels' "${TARBALL_FAKE_KERNELS[@]}"
+for k in "${TARBALL_FAKE_KERNELS[@]}"; do
+    mkdir -p "/var/lib/dkms/dkms_test/1.0/${k}"
+    cp -r "/var/lib/dkms/dkms_test/1.0/${KERNEL_VER}/${KERNEL_ARCH}" "/var/lib/dkms/dkms_test/1.0/${k}/"
+done
+for k in "${TARBALL_KERNELS[@]}"; do
+    echo "${k}" > "/var/lib/dkms/dkms_test/1.0/${k}/${KERNEL_ARCH}/tarball_marker"
+done
+
+echo 'Making a tarball for multiple kernels'
+run_with_expected_output dkms mktarball -m dkms_test -v 1.0 -k "${TARBALL_KERNELS[0]}" -k "${TARBALL_KERNELS[1]}" -k "${TARBALL_KERNELS[2]}" --archive "${TARBALL_LOCATION}" << EOF
+Marking modules for ${TARBALL_KERNELS[0]} (${KERNEL_ARCH}) for archiving...
+Marking modules for ${TARBALL_KERNELS[1]} (${KERNEL_ARCH}) for archiving...
+Marking modules for ${TARBALL_KERNELS[2]} (${KERNEL_ARCH}) for archiving...
+
+Marking /var/lib/dkms/dkms_test/1.0/source for archiving...
+
+Tarball location: ${TARBALL_LOCATION}
+EOF
+
+echo ' Removing the test module from the DKMS tree and the source tree'
+rm -rf /var/lib/dkms/dkms_test/
+remove_module_source_tree /usr/src/dkms_test-1.0
+
+echo 'Loading the tarball for multiple kernels'
+run_with_expected_output dkms ldtarball "${TARBALL_LOCATION}" << EOF
+
+Loading tarball for dkms_test/1.0
+Loading /var/lib/dkms/dkms_test/1.0/${TARBALL_KERNELS[0]}/${KERNEL_ARCH}...
+Loading /var/lib/dkms/dkms_test/1.0/${TARBALL_KERNELS[1]}/${KERNEL_ARCH}...
+Loading /var/lib/dkms/dkms_test/1.0/${TARBALL_KERNELS[2]}/${KERNEL_ARCH}...
+Creating symlink /var/lib/dkms/dkms_test/1.0/source -> /usr/src/dkms_test-1.0
+EOF
+check_module_source_tree_created /usr/src/dkms_test-1.0
+check_tarball_markers
+
+echo ' Removing symlink /var/lib/dkms/dkms_test/1.0/source and clobbering the markers'
+rm /var/lib/dkms/dkms_test/1.0/source
+for k in "${TARBALL_KERNELS[@]}"; do
+    echo "stale" > "/var/lib/dkms/dkms_test/1.0/${k}/${KERNEL_ARCH}/tarball_marker"
+done
+
+echo 'Loading the tarball for multiple kernels with --force'
+run_with_expected_output dkms ldtarball "${TARBALL_LOCATION}" --force << EOF
+
+Loading tarball for dkms_test/1.0
+
+Forcing install of dkms_test/1.0
+Loading /var/lib/dkms/dkms_test/1.0/${TARBALL_KERNELS[0]}/${KERNEL_ARCH}...
+Loading /var/lib/dkms/dkms_test/1.0/${TARBALL_KERNELS[1]}/${KERNEL_ARCH}...
+Loading /var/lib/dkms/dkms_test/1.0/${TARBALL_KERNELS[2]}/${KERNEL_ARCH}...
+Creating symlink /var/lib/dkms/dkms_test/1.0/source -> /usr/src/dkms_test-1.0
+EOF
+check_module_source_tree_created /usr/src/dkms_test-1.0
+check_tarball_markers
+
+echo 'Removing the test module'
+rm -f "${TARBALL_LOCATION}"
+remove_module_source_tree /usr/src/dkms_test-1.0
+echo ' Removing directory /var/lib/dkms/dkms_test/'
+rm -rf /var/lib/dkms/dkms_test/
+
+echo 'Checking that the environment is clean again'
+check_no_dkms_test
+
+fi  # tarball tests
+
 ############################################################################
 
 echo '*** All tests successful :)'
