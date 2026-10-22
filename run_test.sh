@@ -264,6 +264,7 @@ generalize_make_log() {
 /warning: the compiler differs from the one used to build the kernel/d
 /  The kernel was built by:/d
 /  You are using:/d
+/warning: pahole version differs from the one used to build the kernel/d
 /  The kernel was built with:/d
 /make(\[[0-9]+\])?: (Entering|Leaving) directory/d
 s/ \[M\] /     /
