@@ -2470,6 +2470,111 @@ check_no_dkms_test
 
 fi  # replace tests
 
+if [[ ! $only || $only = collisions ]]; then
+
+############################################################################
+echo '*** Testing replacement of multiple pre-existing modules'
+############################################################################
+
+# A kernel package can ship the same module more than once, e.g. in the
+# kernel tree and in an out-of-tree driver stack under /updates. All copies
+# have to be moved away on install, otherwise depmod may prefer one of them
+# over the module installed by dkms. They are all put back on uninstall.
+
+COLLISION_DIRS=(
+    "/lib/modules/${KERNEL_VER}/kernel/drivers/dkms_collision"
+    "/lib/modules/${KERNEL_VER}/updates/dkms_collision"
+)
+
+echo 'Building the to-be-replaced test module'
+run_with_expected_output dkms add test/dkms_test-1.0 << EOF
+Creating symlink /var/lib/dkms/dkms_test/1.0/source -> /usr/src/dkms_test-1.0
+EOF
+check_module_source_tree_created /usr/src/dkms_test-1.0
+set_signing_message "dkms_test" "1.0"
+run_with_expected_output dkms build -k "${KERNEL_VER}" -m dkms_test -v 1.0 << EOF
+${SIGNING_PROLOGUE}
+Building module(s)... done.${SIGNING_MESSAGE}
+EOF
+
+echo 'Placing two copies of the to-be-replaced test module in the kernel tree'
+for dir in "${COLLISION_DIRS[@]}"; do
+    mkdir -p "${dir}"
+    cp "/var/lib/dkms/dkms_test/1.0/${KERNEL_VER}/${KERNEL_ARCH}/module/dkms_test.ko${mod_compression_ext}" "${dir}/"
+done
+run_with_expected_output dkms remove -k "${KERNEL_VER}" -m dkms_test -v 1.0 << EOF
+Module dkms_test/1.0 is not installed for kernel ${KERNEL_VER} (${KERNEL_ARCH}). Skipping...
+
+Deleting module dkms_test/1.0 completely from the DKMS tree.
+EOF
+remove_module_source_tree /usr/src/dkms_test-1.0
+
+echo 'Adding, building and installing the replacement test module'
+run_with_expected_output dkms add test/dkms_replace_test-2.0 << EOF
+Creating symlink /var/lib/dkms/dkms_replace_test/2.0/source -> /usr/src/dkms_replace_test-2.0
+EOF
+check_module_source_tree_created /usr/src/dkms_replace_test-2.0
+set_signing_message "dkms_replace_test" "2.0" "dkms_test"
+run_with_expected_output dkms install -k "${KERNEL_VER}" -m dkms_replace_test -v 2.0 << EOF
+${SIGNING_PROLOGUE}
+Building module(s)... done.${SIGNING_MESSAGE}
+Multiple original modules exist, all of them will be put back in place during a later uninstall
+All instances will be stored in /var/lib/dkms/dkms_replace_test/original_module/${KERNEL_VER}/${KERNEL_ARCH}/collisions/
+Multiple same named modules! 2 named dkms_test.ko${mod_compression_ext} in /lib/modules/${KERNEL_VER}/
+Installing /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_test.ko${mod_compression_ext}
+Running depmod... done.
+EOF
+run_status_with_expected_output 'dkms_replace_test' << EOF
+dkms_replace_test/2.0, ${KERNEL_VER}, ${KERNEL_ARCH}: installed (Original modules exist)
+EOF
+for dir in "${COLLISION_DIRS[@]}"; do
+    if [[ -e "${dir}/dkms_test.ko${mod_compression_ext}" ]]; then
+        echo >&2 "Error: ${dir}/dkms_test.ko${mod_compression_ext} was not archived"
+        exit 1
+    fi
+done
+
+# The archived copies are restored in no particular order
+# Use `sort` so we can reliably diff
+echo 'Removing the replacement test module'
+dkms remove -k "${KERNEL_VER}" -m dkms_replace_test -v 2.0 > test_cmd_output.log 2>&1
+generalize_expected_output test_cmd_output.log
+sort -o test_cmd_output.log test_cmd_output.log
+sort > test_cmd_expected_output.log << EOF
+Module dkms_replace_test/2.0 for kernel ${KERNEL_VER} (${KERNEL_ARCH}):
+Before uninstall, this module version was ACTIVE on this kernel.
+Deleting /lib/modules/${KERNEL_VER}/${expected_dest_loc}/dkms_test.ko${mod_compression_ext}
+Restoring archived original module ${COLLISION_DIRS[0]}/dkms_test.ko${mod_compression_ext}
+Restoring archived original module ${COLLISION_DIRS[1]}/dkms_test.ko${mod_compression_ext}
+Running depmod... done.
+
+Deleting module dkms_replace_test/2.0 completely from the DKMS tree.
+EOF
+if ! diff -U3 test_cmd_expected_output.log test_cmd_output.log ; then
+    echo >&2 "Error: unexpected output from: dkms remove"
+    exit 1
+fi
+rm test_cmd_expected_output.log test_cmd_output.log
+for dir in "${COLLISION_DIRS[@]}"; do
+    if ! [[ -f "${dir}/dkms_test.ko${mod_compression_ext}" ]]; then
+        echo >&2 "Error: ${dir}/dkms_test.ko${mod_compression_ext} was not restored"
+        exit 1
+    fi
+done
+run_status_with_expected_output 'dkms_replace_test' << EOF
+EOF
+
+echo 'Removing the copies of the to-be-replaced test module from the kernel tree'
+rm -rf "${COLLISION_DIRS[@]}"
+depmod "${KERNEL_VER}"
+
+remove_module_source_tree /usr/src/dkms_replace_test-2.0
+
+echo 'Checking that the environment is clean again'
+check_no_dkms_test
+
+fi  # collisions tests
+
 if [[ ! $only || $only = multiple ]]; then
 
 ############################################################################

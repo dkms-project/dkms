@@ -1871,11 +1871,11 @@ do_install()
     # Save the original_module if one exists, none have been saved before, and this is the first module for this kernel
     for count in "${modules_to_install[@]}"; do
         local m
-        local installed_modules
+        local -a installed_modules
         local module_count
         local original_copy
         m=${dest_module_name[$count]}
-        installed_modules=$(find_module "$lib_tree" "$m")
+        readarray -t installed_modules < <(find_module "$lib_tree" "$m")
         module_count=${#installed_modules[@]}
         original_copy=$(compressed_or_uncompressed "$original_module_backup_dir" "$m")
         if [[ -L $active_link && $original_copy ]]; then
@@ -1904,8 +1904,8 @@ do_install()
                 break
             done
             if [[ ! $found_original ]] && ((module_count > 1)); then
-                echo "Multiple original modules exist, so none will be put back in place during a later uninstall"
-                echo "All instances will be stored for reference purposes in $original_module_backup_dir/collisions/"
+                echo "Multiple original modules exist, all of them will be put back in place during a later uninstall"
+                echo "All instances will be stored in $original_module_backup_dir/collisions/"
             fi
         fi
 
