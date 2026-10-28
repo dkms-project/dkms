@@ -414,7 +414,7 @@ distro_sign_file_candidates=
 distro_modsigkey=/var/lib/dkms/mok.key
 distro_modsigcert=/var/lib/dkms/mok.pub
 case "${os_id}" in
-    centos | fedora | rhel | ovm | almalinux | ol)
+    centos | fedora | rhel | ovm | almalinux | ol | opencloudos | tencentos)
         expected_dest_loc=extra
         mod_compression_ext=.xz
         ;;
