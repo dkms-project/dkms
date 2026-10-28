@@ -513,7 +513,7 @@ override_dest_module_location()
     [[ ${addon_modules_dir} ]] && echo "/${addon_modules_dir}" && return
 
     case "$running_distribution" in
-    fedora* | centos* | rhel*)
+    fedora* | centos* | rhel* | opencloudos* | tencentos*)
         echo "/extra" && return
         ;;
     sles* | suse* | opensuse*)
