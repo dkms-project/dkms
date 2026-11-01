@@ -385,6 +385,21 @@ have_one_kernel() {
     fi
 }
 
+# Find the "best" kernel version to use if one was not specified. This is the
+# running kernel if it is installed. If running in a chroot we probably want to
+# use the latest kernel installed since the kernel running on a build host might
+# be different.
+find_best_kernel()
+{
+    _check_kernel_dir "$current_kernel" && echo "$current_kernel" && return
+    running_in_chroot || running_in_container || { echo "$current_kernel"; return; }
+    BEST=$current_kernel
+    while IFS= read -r -d '' candidate; do
+        _check_kernel_dir "${candidate##*/}" && BEST="${candidate##*/}"
+    done < <(find "${install_tree}/"* -maxdepth 0 -type d -print0 | sort -zV)
+    echo "$BEST"
+}
+
 # Set up the kernelver and arch arrays.  You must have a 1:1 correspondence --
 # if there is an entry in kernelver[$i], there must also be an entry in arch[$i]
 # Note the special casing for the status action -- the status functions just
@@ -410,7 +425,7 @@ setup_kernels_arches()
     # Set default kernel version and arch, if none set (but only --all isn't set)
     if [[ $1 != status ]]; then
         if [[ ${#kernelver[@]} -eq 0 && ! $all ]]; then
-            kernelver[0]=$(uname -r)
+            kernelver[0]=$(find_best_kernel)
         fi
         if [[ ${#arch[@]} -eq 0 ]]; then
             case "$running_distribution" in
@@ -1218,6 +1233,16 @@ running_in_chroot() {
         [[ "${init_rootdir_info}" != "${our_rootdir_info}" ]] && return 0
     fi
 
+    return 1
+}
+
+# Detect if running in a container. The chroot checks above would not detect
+# processes running in a pid and mount namespace.
+running_in_container()
+{
+    grep -qa 'container=' /proc/1/environ && return 0
+    grep -qE 'docker|lxc|kubepods' /proc/1/cgroup && return 0
+    [[ -f /.dockerenv ]] && return 0
     return 1
 }
 
