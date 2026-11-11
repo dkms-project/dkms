@@ -23,8 +23,6 @@ jobs:
           - {name: "alpine", tag: "3.23", variant: "-virt"}
           - {name: "alpine", tag: "3.22", variant: "-lts"}
           - {name: "alpine", tag: "3.22", variant: "-virt"}
-          - {name: "alpine", tag: "3.21", variant: "-lts"}
-          - {name: "alpine", tag: "3.21", variant: "-virt"}
           - {name: "archlinux", tag: "latest"}
           - {name: "archlinux", tag: "latest", variant: "-lts"}
           - {name: "archlinux", tag: "latest", variant: "-zen"}
@@ -32,11 +30,12 @@ jobs:
           - {name: "centos", tag: "stream9", url: "quay.io/centos/"}
           - {name: "debian", tag: "13"}
           - {name: "debian", tag: "12"}
+          - {name: "fedora", tag: "45", url: "registry.fedoraproject.org/"}
           - {name: "fedora", tag: "44", url: "registry.fedoraproject.org/"}
           - {name: "fedora", tag: "43", url: "registry.fedoraproject.org/"}
           - {name: "gentoo/stage3", tag: "latest"}
           - {name: "opensuse/tumbleweed", tag: "latest", variant: "-default", url: "registry.opensuse.org/"}
-          - {name: "opensuse/leap", tag: "15.6", variant: "-default", url: "registry.opensuse.org/"}
+          - {name: "opensuse/leap", tag: "16.1", variant: "-default", url: "registry.opensuse.org/"}
           - {name: "opensuse/leap", tag: "16.0", variant: "-default", url: "registry.opensuse.org/"}
           - {name: "oraclelinux", tag: "10", uek: "ol10_UEKR8"}
           - {name: "oraclelinux", tag: "9", uek: "ol9_UEKR8", gcc: "gcc-toolset-14"}
@@ -49,11 +48,6 @@ jobs:
       image: ${{ matrix.distro.url }}${{ matrix.distro.name }}:${{ matrix.distro.tag }}
 
     steps:
-    - name: Checkout
-      if: matrix.distro.name == 'opensuse/leap' && matrix.distro.tag == '15.6'
-      # openSUSE Leap 15.6 does not have tar in the base image
-      run: |
-        zypper --non-interactive install tar gzip
     - uses: actions/checkout@v7
 
     - name: Install dependencies for Red Hat based distributions
